@@ -1,21 +1,38 @@
 mod animated_sprite;
+mod collider;
+mod environment;
+mod game_mode;
+mod interactibles;
+mod investigators;
 mod main_menu;
 mod player;
-mod playing;
 mod states;
+mod villagers;
 
 use bevy::prelude::*;
 use bevy_dev_tools::states::log_transitions;
-use playing::PlayingPlugin;
+use environment::EnvironmentPlugin;
+use game_mode::GamePlugin;
+use interactibles::InteractiblesPlugin;
+use investigators::InvestigatorsPlugin;
+use player::PlayerPlugin;
+use villagers::VillagersPlugin;
 
 use crate::main_menu::MainMenuPlugin;
 use crate::states::GameState;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugins(MainMenuPlugin)
-        .add_plugins(PlayingPlugin)
+        .add_plugins((
+            DefaultPlugins,
+            MainMenuPlugin,
+            GamePlugin,
+            EnvironmentPlugin,
+            InteractiblesPlugin,
+            InvestigatorsPlugin,
+            PlayerPlugin,
+            VillagersPlugin,
+        ))
         .init_state::<GameState>()
         .add_systems(Update, log_transitions::<GameState>)
         .run();
