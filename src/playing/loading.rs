@@ -9,27 +9,41 @@ pub fn load(
     asset_server: Res<AssetServer>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     mut next_state: ResMut<NextState<PlayingState>>,
+    mut animations: ResMut<Animations>,
 ) {
+    // Load Textures and Animations
+    let player_texture: Handle<Image> = asset_server.load("2d/player_placeholder.png");
+    let player_layout = TextureAtlasLayout::from_grid(UVec2::splat(32), 4, 1, None, None);
+    let player_texture_atlas_layout = texture_atlas_layouts.add(player_layout);
+
+    let player_idle_animation_indices = AnimationIndices { first: 0, last: 0 };
+    let player_movment_animation_indices = AnimationIndices { first: 0, last: 3 };
+
+    animations
+        .0
+        .insert("player_idle".to_string(), player_idle_animation_indices);
+    animations.0.insert(
+        "player_movement".to_string(),
+        player_movment_animation_indices,
+    );
+
     // Spawn environment
 
     // Spawn player
-    let texture: Handle<Image> = asset_server.load("2d/player_placeholder.png");
-    let layout = TextureAtlasLayout::from_grid(UVec2::splat(32), 4, 1, None, None);
-    let texture_atlas_layout = texture_atlas_layouts.add(layout);
-    let animation_indices = AnimationIndices { first: 1, last: 4 };
-
     let player = commands
         .spawn((
-            SpriteBundle {
-                texture,
-                ..default()
+            AnimatedSprite {
+                sprite: SpriteBundle {
+                    texture: player_texture,
+                    ..default()
+                },
+                atlas: TextureAtlas {
+                    layout: player_texture_atlas_layout,
+                    index: player_idle_animation_indices.first,
+                },
+                animation: *animations.0.get("player_idle").unwrap(),
+                timer: AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
             },
-            TextureAtlas {
-                layout: texture_atlas_layout,
-                index: animation_indices.first,
-            },
-            animation_indices,
-            AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
             PlayerTag,
         ))
         .id();
