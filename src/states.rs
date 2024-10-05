@@ -16,6 +16,7 @@ pub enum GameState {
 #[allow(dead_code)]
 pub enum PlayingState {
     #[default]
+    Setup,
     Loading,
     IntroScene,
     Playing,

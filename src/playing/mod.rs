@@ -5,6 +5,7 @@ mod playing;
 use bevy::prelude::*;
 use bevy_dev_tools::states::log_transitions;
 
+use crate::animated_sprite::animate_sprite;
 use crate::playing::intro_scene::{intro_scene_setup, intro_scene_update};
 use crate::playing::loading::load;
 use crate::states::{GameState, PlayingState};
@@ -12,9 +13,9 @@ use crate::states::{GameState, PlayingState};
 #[derive(Component)]
 pub struct PlayingTag;
 
-pub struct MainMenuPlugin;
+pub struct PlayingPlugin;
 
-impl Plugin for MainMenuPlugin {
+impl Plugin for PlayingPlugin {
     fn build(&self, app: &mut App) {
         app.add_sub_state::<PlayingState>()
             .add_systems(OnEnter(GameState::Playing), setup)
@@ -25,13 +26,15 @@ impl Plugin for MainMenuPlugin {
                 Update,
                 intro_scene_update.run_if(in_state(PlayingState::IntroScene)),
             )
-            .add_systems(Update, log_transitions::<PlayingState>);
+            .add_systems(Update, log_transitions::<PlayingState>)
+            .add_systems(Update, animate_sprite);
     }
 }
 
 fn setup(mut next_state: ResMut<NextState<PlayingState>>) {
     // Extra setup if needed
 
+    println!("SETUP PLAYING STATE");
     next_state.set(PlayingState::Loading);
 }
 
