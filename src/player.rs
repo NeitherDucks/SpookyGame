@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     animated_sprite::{AnimatedSprite, AnimationIndices, AnimationTimer, Animations},
-    collider::{Collider, ColliderShape},
+    collider::{test_collision, Collider, ColliderShape},
     states::{GameState, PlayingState},
 };
 
@@ -98,11 +98,12 @@ fn cleanup(
 }
 
 fn move_player(
-    mut player: Query<&mut Transform, With<PlayerTag>>,
+    mut player: Query<(&mut Transform, &Collider), With<PlayerTag>>,
+    colliders: Query<(&Transform, &Collider), Without<PlayerTag>>,
     time: Res<Time>,
     input: Res<ButtonInput<KeyCode>>,
 ) {
-    let Ok(mut player) = player.get_single_mut() else {
+    let Ok((mut player, collider)) = player.get_single_mut() else {
         return;
     };
 
@@ -125,5 +126,26 @@ fn move_player(
     }
 
     let move_delta = direction.normalize_or_zero() * PLAYER_SPEED * time.delta_seconds();
-    player.translation += move_delta.extend(0.);
+
+    if move_delta.length() > 0.0 {
+        let new_position = player.translation + move_delta.extend(0.);
+
+        let mut collide: bool = false;
+
+        // Obviously very slow, need some space partitionning algo like Quadtree, or KD-tree to query only things near the player.
+        // But this should be fine for this small game
+        for (transform, collider2) in colliders.iter() {
+            //
+            collide |= test_collision(
+                player.translation.xy(),
+                collider,
+                transform.translation.xy(),
+                collider2,
+            );
+        }
+
+        if !collide {
+            player.translation += move_delta.extend(0.);
+        }
+    }
 }
