@@ -6,7 +6,6 @@ use bevy::prelude::*;
 pub enum GameState {
     #[default]
     MainMenu,
-    PauseMenu,
     Playing,
 }
 
@@ -20,6 +19,7 @@ pub enum PlayingState {
     Loading,
     IntroScene,
     Playing,
+    Pause,
     Death,
     Respawning,
     Win,

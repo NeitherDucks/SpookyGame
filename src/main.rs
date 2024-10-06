@@ -5,6 +5,7 @@ mod game_mode;
 mod interactibles;
 mod investigators;
 mod main_menu;
+mod pause_menu;
 mod player;
 mod states;
 mod villagers;
@@ -15,6 +16,7 @@ use environment::EnvironmentPlugin;
 use game_mode::GamePlugin;
 use interactibles::InteractiblesPlugin;
 use investigators::InvestigatorsPlugin;
+use pause_menu::PauseMenuPlugin;
 use player::PlayerPlugin;
 use villagers::VillagersPlugin;
 
@@ -26,6 +28,7 @@ fn main() {
         .add_plugins((
             DefaultPlugins,
             MainMenuPlugin,
+            PauseMenuPlugin,
             GamePlugin,
             EnvironmentPlugin,
             InteractiblesPlugin,

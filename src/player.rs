@@ -24,6 +24,11 @@ impl Plugin for PlayerPlugin {
             .add_systems(
                 Update,
                 update_collider.run_if(in_state(PlayingState::Playing)),
+            )
+            .add_systems(
+                Update,
+                escape_pressed
+                    .run_if(in_state(PlayingState::Playing).or_else(in_state(PlayingState::Pause))),
             );
     }
 }
@@ -155,7 +160,7 @@ fn move_player(
 
         let mut collide: bool = false;
 
-        // Obviously very slow, need some space partitionning algo like Quadtree, or KD-tree to query only things near the player.
+        // Obviously very slow, need some space partitioning algo like Quadtree, or KD-tree to query only things near the player.
         // But should be fine for this small game
         for collider2 in colliders.iter() {
             collide |= match shape {
@@ -167,11 +172,24 @@ fn move_player(
                     test_collision(&Collider::Rectangle(r.aabb_2d(new_position, 0.)), collider2)
                 }
             };
-            // collide |= test_collision(collider, collider2);
         }
 
         if !collide {
             player.translation += move_delta.extend(0.);
+        }
+    }
+}
+
+fn escape_pressed(
+    input: Res<ButtonInput<KeyCode>>,
+    current_state: Res<State<PlayingState>>,
+    mut next_state: ResMut<NextState<PlayingState>>,
+) {
+    if input.just_pressed(KeyCode::Escape) {
+        if *current_state.get() == PlayingState::Playing {
+            next_state.set(PlayingState::Pause);
+        } else if *current_state.get() == PlayingState::Pause {
+            next_state.set(PlayingState::Playing);
         }
     }
 }

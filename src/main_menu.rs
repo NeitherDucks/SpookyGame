@@ -3,10 +3,10 @@ use bevy::prelude::*;
 use crate::states::GameState;
 
 #[derive(Component)]
-pub struct MainMenuTag;
+struct MainMenuTag;
 
 #[derive(Component)]
-pub struct MainMenuCameraTag;
+struct MainMenuCameraTag;
 
 pub struct MainMenuPlugin;
 
@@ -18,7 +18,7 @@ impl Plugin for MainMenuPlugin {
     }
 }
 
-pub fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands) {
     commands.spawn((Camera3dBundle { ..default() }, MainMenuCameraTag));
     commands
         .spawn((
@@ -62,7 +62,7 @@ pub fn setup(mut commands: Commands) {
         });
 }
 
-pub fn cleanup(
+fn cleanup(
     mut commands: Commands,
     main_menu: Query<Entity, With<MainMenuTag>>,
     camera: Query<Entity, With<MainMenuCameraTag>>,
