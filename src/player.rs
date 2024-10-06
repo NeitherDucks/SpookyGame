@@ -1,8 +1,8 @@
-use bevy::prelude::*;
+use bevy::{math::bounding::Bounded2d, prelude::*};
 
 use crate::{
     animated_sprite::{AnimatedSprite, AnimationIndices, AnimationTimer, Animations},
-    collider::{test_collision, Collider, ColliderShape},
+    collider::{test_collision, Collider, ColliderOffset, ColliderShape},
     states::{GameState, PlayingState},
 };
 
@@ -20,7 +20,11 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(PlayingState::Loading), setup)
             .add_systems(OnExit(GameState::Playing), cleanup)
-            .add_systems(Update, move_player.run_if(in_state(PlayingState::Playing)));
+            .add_systems(Update, move_player.run_if(in_state(PlayingState::Playing)))
+            .add_systems(
+                Update,
+                update_collider.run_if(in_state(PlayingState::Playing)),
+            );
     }
 }
 
@@ -61,11 +65,8 @@ fn setup(
                 animation: *animations.0.get("player_idle").unwrap(),
                 timer: AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
             },
-            Collider {
-                shape: ColliderShape::Circle,
-                center: Vec2::ZERO,
-                extent: 32.0,
-            },
+            ColliderShape::Circle(Circle { radius: 16.0 }),
+            ColliderOffset::ZERO,
             PlayerTag,
         ))
         .id();
@@ -97,13 +98,35 @@ fn cleanup(
     commands.entity(camera).despawn_recursive();
 }
 
+fn update_collider(
+    mut commands: Commands,
+    query: Query<
+        (Entity, &ColliderShape, &ColliderOffset, &Transform),
+        (Changed<Transform>, With<PlayerTag>),
+    >,
+) {
+    for (entity, collider_shape, collider_offset, transform) in query.iter() {
+        let translation = transform.translation.xy() + collider_offset.0;
+        match collider_shape {
+            ColliderShape::Circle(c) => {
+                let bounding = c.bounding_circle(translation, 0.);
+                commands.entity(entity).insert(Collider::Circle(bounding));
+            }
+            ColliderShape::Rectangle(s) => {
+                let aabb = s.aabb_2d(translation, 0.);
+                commands.entity(entity).insert(Collider::Rectangle(aabb));
+            }
+        }
+    }
+}
+
 fn move_player(
-    mut player: Query<(&mut Transform, &Collider), With<PlayerTag>>,
-    colliders: Query<(&Transform, &Collider), Without<PlayerTag>>,
+    mut player: Query<(&mut Transform, &ColliderShape, &ColliderOffset), With<PlayerTag>>,
+    colliders: Query<&Collider, Without<PlayerTag>>,
     time: Res<Time>,
     input: Res<ButtonInput<KeyCode>>,
 ) {
-    let Ok((mut player, collider)) = player.get_single_mut() else {
+    let Ok((mut player, shape, offset)) = player.get_single_mut() else {
         return;
     };
 
@@ -128,20 +151,23 @@ fn move_player(
     let move_delta = direction.normalize_or_zero() * PLAYER_SPEED * time.delta_seconds();
 
     if move_delta.length() > 0.0 {
-        let new_position = player.translation + move_delta.extend(0.);
+        let new_position = player.translation.xy() + move_delta + offset.0;
 
         let mut collide: bool = false;
 
         // Obviously very slow, need some space partitionning algo like Quadtree, or KD-tree to query only things near the player.
-        // But this should be fine for this small game
-        for (transform, collider2) in colliders.iter() {
-            //
-            collide |= test_collision(
-                player.translation.xy(),
-                collider,
-                transform.translation.xy(),
-                collider2,
-            );
+        // But should be fine for this small game
+        for collider2 in colliders.iter() {
+            collide |= match shape {
+                ColliderShape::Circle(c) => test_collision(
+                    &Collider::Circle(c.bounding_circle(new_position, 0.)),
+                    collider2,
+                ),
+                &ColliderShape::Rectangle(r) => {
+                    test_collision(&Collider::Rectangle(r.aabb_2d(new_position, 0.)), collider2)
+                }
+            };
+            // collide |= test_collision(collider, collider2);
         }
 
         if !collide {
