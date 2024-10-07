@@ -7,6 +7,7 @@ mod investigators;
 mod main_menu;
 mod pause_menu;
 mod player;
+mod rendering;
 mod states;
 mod villagers;
 
@@ -18,6 +19,7 @@ use interactibles::InteractiblesPlugin;
 use investigators::InvestigatorsPlugin;
 use pause_menu::PauseMenuPlugin;
 use player::PlayerPlugin;
+use rendering::RenderingPlugin;
 use villagers::VillagersPlugin;
 
 use crate::main_menu::MainMenuPlugin;
@@ -26,7 +28,8 @@ use crate::states::GameState;
 fn main() {
     App::new()
         .add_plugins((
-            DefaultPlugins,
+            DefaultPlugins.set(ImagePlugin::default_nearest()),
+            RenderingPlugin,
             MainMenuPlugin,
             PauseMenuPlugin,
             GamePlugin,

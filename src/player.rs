@@ -3,6 +3,7 @@ use bevy::{math::bounding::Bounded2d, prelude::*};
 use crate::{
     animated_sprite::{AnimatedSprite, AnimationIndices, AnimationTimer, Animations},
     collider::{test_collision, Collider, ColliderOffset, ColliderShape},
+    rendering::{InGameCamera, PIXEL_PERFECT_LAYERS},
     states::{GameState, PlayingState},
 };
 
@@ -10,9 +11,6 @@ const PLAYER_SPEED: f32 = 100.0;
 
 #[derive(Component)]
 pub struct PlayerTag;
-
-#[derive(Component)]
-pub struct PlayerCameraTag;
 
 pub struct PlayerPlugin;
 
@@ -38,6 +36,7 @@ fn setup(
     asset_server: Res<AssetServer>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     mut animations: ResMut<Animations>,
+    camera: Query<Entity, With<InGameCamera>>,
 ) {
     // Load Textures and Animations
     let player_texture: Handle<Image> = asset_server.load("2d/player_placeholder.png");
@@ -73,13 +72,13 @@ fn setup(
             ColliderShape::Circle(Circle { radius: 16.0 }),
             ColliderOffset::ZERO,
             PlayerTag,
+            PIXEL_PERFECT_LAYERS,
         ))
         .id();
 
-    // Spawn camera
-    let camera = commands
-        .spawn((Camera2dBundle::default(), PlayerCameraTag))
-        .id();
+    let Ok(camera) = camera.get_single() else {
+        return;
+    };
 
     // Attach camera to player
     commands.entity(player).push_children(&[camera]);
@@ -88,19 +87,18 @@ fn setup(
 fn cleanup(
     mut commands: Commands,
     player: Query<Entity, With<PlayerTag>>,
-    camera: Query<Entity, With<PlayerCameraTag>>,
+    camera: Query<Entity, With<InGameCamera>>,
 ) {
-    let Ok(player) = player.get_single() else {
-        return;
-    };
-
-    commands.entity(player).despawn_recursive();
-
     let Ok(camera) = camera.get_single() else {
         return;
     };
 
-    commands.entity(camera).despawn_recursive();
+    let Ok(player) = player.get_single() else {
+        return;
+    };
+
+    commands.entity(player).remove_children(&[camera]);
+    commands.entity(player).despawn_recursive();
 }
 
 fn update_collider(

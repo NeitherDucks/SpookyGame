@@ -1,12 +1,9 @@
 use bevy::prelude::*;
 
-use crate::states::GameState;
+use crate::{rendering::PIXEL_PERFECT_LAYERS, states::GameState};
 
 #[derive(Component)]
 struct MainMenuTag;
-
-#[derive(Component)]
-struct MainMenuCameraTag;
 
 pub struct MainMenuPlugin;
 
@@ -19,7 +16,7 @@ impl Plugin for MainMenuPlugin {
 }
 
 fn setup(mut commands: Commands) {
-    commands.spawn((Camera3dBundle { ..default() }, MainMenuCameraTag));
+    // commands.spawn((Camera3dBundle { ..default() }, MainMenuCameraTag));
     commands
         .spawn((
             NodeBundle {
@@ -33,6 +30,7 @@ fn setup(mut commands: Commands) {
                 ..default()
             },
             MainMenuTag,
+            PIXEL_PERFECT_LAYERS,
         ))
         .with_children(|parent| {
             parent
@@ -62,16 +60,8 @@ fn setup(mut commands: Commands) {
         });
 }
 
-fn cleanup(
-    mut commands: Commands,
-    main_menu: Query<Entity, With<MainMenuTag>>,
-    camera: Query<Entity, With<MainMenuCameraTag>>,
-) {
+fn cleanup(mut commands: Commands, main_menu: Query<Entity, With<MainMenuTag>>) {
     for entity in &main_menu {
-        commands.entity(entity).despawn_recursive();
-    }
-
-    for entity in &camera {
         commands.entity(entity).despawn_recursive();
     }
 }

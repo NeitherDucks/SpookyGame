@@ -3,6 +3,7 @@ use bevy::{math::bounding::BoundingCircle, prelude::*};
 use crate::{
     animated_sprite::{AnimatedSprite, AnimationIndices, AnimationTimer, Animations},
     collider::{Collider, ColliderOffset},
+    rendering::PIXEL_PERFECT_LAYERS,
     states::{GameState, PlayingState},
 };
 
@@ -61,7 +62,12 @@ fn setup(
             circle: Circle { radius: 16.0 },
         }),
         EnvironmentTag,
+        PIXEL_PERFECT_LAYERS,
     ));
 }
 
-fn cleanup() {}
+fn cleanup(mut commands: Commands, query: Query<Entity, With<EnvironmentTag>>) {
+    for entity in query.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
+}
