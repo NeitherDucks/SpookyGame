@@ -10,8 +10,8 @@ use bevy::{
     window::WindowResized,
 };
 
-const RES_WIDTH: u32 = 160;
-const RES_HEIGHT: u32 = 90;
+const RES_WIDTH: u32 = 640;
+const RES_HEIGHT: u32 = 360;
 
 pub const PIXEL_PERFECT_LAYERS: RenderLayers = RenderLayers::layer(0);
 pub const HIGH_RES_LAYERS: RenderLayers = RenderLayers::layer(1);
