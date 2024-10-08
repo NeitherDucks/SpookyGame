@@ -2,7 +2,9 @@ use bevy::{math::bounding::Bounded2d, prelude::*};
 
 use crate::{
     animated_sprite::{AnimatedSprite, AnimationIndices, AnimationTimer, Animations},
-    collider::{test_collision, Collider, ColliderOffset, ColliderShape},
+    collisions::{test_collision, Collider, ColliderOffset, ColliderShape},
+    environment::Tile,
+    grid::GridLocation,
     rendering::{InGameCamera, PIXEL_PERFECT_LAYERS},
     states::{GameState, PlayingState},
 };
@@ -21,10 +23,6 @@ impl Plugin for PlayerPlugin {
             .add_systems(Update, move_player.run_if(in_state(PlayingState::Playing)))
             .add_systems(
                 Update,
-                update_collider.run_if(in_state(PlayingState::Playing)),
-            )
-            .add_systems(
-                Update,
                 escape_pressed
                     .run_if(in_state(PlayingState::Playing).or_else(in_state(PlayingState::Pause))),
             );
@@ -40,36 +38,50 @@ fn setup(
 ) {
     // Load Textures and Animations
     let player_texture: Handle<Image> = asset_server.load("2d/player_placeholder.png");
-    let player_layout = TextureAtlasLayout::from_grid(UVec2::splat(32), 4, 1, None, None);
-    let player_texture_atlas_layout = texture_atlas_layouts.add(player_layout);
+    // let player_layout = TextureAtlasLayout::from_grid(UVec2::splat(32), 4, 1, None, None);
+    // let player_texture_atlas_layout = texture_atlas_layouts.add(player_layout);
 
-    let player_idle_animation_indices = AnimationIndices { first: 0, last: 0 };
-    let player_movment_animation_indices = AnimationIndices { first: 0, last: 3 };
+    // let player_idle_animation_indices = AnimationIndices { first: 0, last: 0 };
+    // let player_movment_animation_indices = AnimationIndices { first: 0, last: 3 };
 
-    animations
-        .0
-        .insert("player_idle".to_string(), player_idle_animation_indices);
-    animations.0.insert(
-        "player_movement".to_string(),
-        player_movment_animation_indices,
-    );
+    // animations
+    //     .0
+    //     .insert("player_idle".to_string(), player_idle_animation_indices);
+    // animations.0.insert(
+    //     "player_movement".to_string(),
+    //     player_movment_animation_indices,
+    // );
 
-    // Spawn player
+    // // Spawn player
+    // let player = commands
+    //     .spawn((
+    //         AnimatedSprite {
+    //             sprite: SpriteBundle {
+    //                 texture: player_texture,
+    //                 ..default()
+    //             },
+    //             atlas: TextureAtlas {
+    //                 layout: player_texture_atlas_layout,
+    //                 index: player_idle_animation_indices.first,
+    //             },
+    //             animation: *animations.0.get("player_idle").unwrap(),
+    //             timer: AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
+    //         },
+    //         ColliderShape::Circle(Circle { radius: 16.0 }),
+    //         ColliderOffset::ZERO,
+    //         PlayerTag,
+    //         PIXEL_PERFECT_LAYERS,
+    //     ))
+    //     .id();
+
     let player = commands
         .spawn((
-            AnimatedSprite {
-                sprite: SpriteBundle {
-                    texture: player_texture,
-                    ..default()
-                },
-                atlas: TextureAtlas {
-                    layout: player_texture_atlas_layout,
-                    index: player_idle_animation_indices.first,
-                },
-                animation: *animations.0.get("player_idle").unwrap(),
-                timer: AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
+            SpriteBundle {
+                texture: player_texture,
+                transform: Transform::from_translation(Vec3::new(32., 32., 0.)),
+                ..default()
             },
-            ColliderShape::Circle(Circle { radius: 16.0 }),
+            ColliderShape::Circle(Circle { radius: 8.0 }),
             ColliderOffset::ZERO,
             PlayerTag,
             PIXEL_PERFECT_LAYERS,
@@ -99,28 +111,6 @@ fn cleanup(
 
     commands.entity(player).remove_children(&[camera]);
     commands.entity(player).despawn_recursive();
-}
-
-fn update_collider(
-    mut commands: Commands,
-    query: Query<
-        (Entity, &ColliderShape, &ColliderOffset, &Transform),
-        (Changed<Transform>, With<PlayerTag>),
-    >,
-) {
-    for (entity, collider_shape, collider_offset, transform) in query.iter() {
-        let translation = transform.translation.xy() + collider_offset.0;
-        match collider_shape {
-            ColliderShape::Circle(c) => {
-                let bounding = c.bounding_circle(translation, 0.);
-                commands.entity(entity).insert(Collider::Circle(bounding));
-            }
-            ColliderShape::Rectangle(s) => {
-                let aabb = s.aabb_2d(translation, 0.);
-                commands.entity(entity).insert(Collider::Rectangle(aabb));
-            }
-        }
-    }
 }
 
 fn move_player(

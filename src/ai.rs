@@ -4,6 +4,8 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
+use bevy_rand::prelude::{GlobalEntropy, WyRand};
+use rand_core::RngCore;
 
 use crate::{
     enemies::EnemyTag,
@@ -37,10 +39,77 @@ impl Plugin for AiPlugin {
                 check_for_player.run_if(in_state(PlayingState::Playing)),
                 (action_idle, action_move, action_investigate)
                     .run_if(in_state(PlayingState::Playing)),
-                no_action.run_if(in_state(PlayingState::Playing)),
+                ensure_enemy_action.run_if(in_state(PlayingState::Playing)),
             )
                 .chain(),
+        )
+        .add_systems(
+            Update,
+            (
+                ai_debug_added,
+                ai_debug_removed_idle,
+                ai_debug_removed_move,
+                ai_debug_removed_chase,
+                ai_debug_removed_investigate,
+            ),
         );
+    }
+}
+
+fn ai_debug_added(
+    query: Query<
+        (
+            Entity,
+            Option<&ActionIdle>,
+            Option<&ActionMove>,
+            Option<&ActionChase>,
+            Option<&ActionInvestigate>,
+        ),
+        (
+            Added<ActionIdle>,
+            Added<ActionMove>,
+            Added<ActionChase>,
+            Added<ActionInvestigate>,
+        ),
+    >,
+) {
+    for (entity, idle, amove, chase, investigate) in &query {
+        if idle.is_some() {
+            println!("Added ActionIdle to entity {}", entity);
+        }
+        if amove.is_some() {
+            println!("Added ActionMove to entity {}", entity);
+        }
+        if chase.is_some() {
+            println!("Added ActionChase to entity {}", entity);
+        }
+        if investigate.is_some() {
+            println!("Added ActionInvestigate to entity {}", entity);
+        }
+    }
+}
+
+fn ai_debug_removed_idle(mut query: RemovedComponents<ActionIdle>) {
+    for entity in query.read() {
+        println!("Removed ActionIdle from entity {}", entity);
+    }
+}
+
+fn ai_debug_removed_move(mut query: RemovedComponents<ActionMove>) {
+    for entity in query.read() {
+        println!("Removed ActionIdle from entity {}", entity);
+    }
+}
+
+fn ai_debug_removed_chase(mut query: RemovedComponents<ActionChase>) {
+    for entity in query.read() {
+        println!("Removed ActionIdle from entity {}", entity);
+    }
+}
+
+fn ai_debug_removed_investigate(mut query: RemovedComponents<ActionInvestigate>) {
+    for entity in query.read() {
+        println!("Removed ActionIdle from entity {}", entity);
     }
 }
 
@@ -102,17 +171,19 @@ fn action_idle(
         (Entity, &Transform, &mut ActionIdle),
         (Without<ActionChase>, Without<ActionInvestigate>),
     >,
+    mut rng: ResMut<GlobalEntropy<WyRand>>,
     grid: Res<Grid<Tile>>,
     time: Res<Time>,
 ) {
     for (entity, transform, mut idle) in &mut query {
-        idle.0 -= time.delta();
+        idle.0 = idle.0.saturating_sub(time.delta());
 
         if idle.0.is_zero() {
             command.entity(entity).remove::<ActionIdle>();
 
             if let Some(location) = GridLocation::from_world(transform.translation.xy()) {
-                let nearby = grid.find_nearby(&location, WANDERING_RADIUS);
+                let nearby =
+                    grid.find_nearby(&location, WANDERING_RADIUS, rng.next_u32(), rng.next_u32());
                 command.entity(entity).insert(ActionMove(nearby));
             }
         }
@@ -130,6 +201,7 @@ fn action_move(
         Option<&ActionChase>,
         Option<&ActionInvestigate>,
     )>,
+    mut rng: ResMut<GlobalEntropy<WyRand>>,
     grid: Res<Grid<Tile>>,
     time: Res<Time>,
 ) {
@@ -160,8 +232,12 @@ fn action_move(
                         }
                         false => match investigating {
                             Some(investigating) => {
-                                let nearby =
-                                    grid.find_nearby(&investigating.location, INVESTIGATING_RADIUS);
+                                let nearby = grid.find_nearby(
+                                    &investigating.location,
+                                    INVESTIGATING_RADIUS,
+                                    rng.next_u32(),
+                                    rng.next_u32(),
+                                );
                                 command.entity(entity).insert(ActionMove(nearby));
                             }
                             None => {
@@ -210,7 +286,7 @@ fn action_investigate(
     time: Res<Time>,
 ) {
     for (entity, mut investigating) in &mut query {
-        investigating.duration -= time.delta();
+        investigating.duration = investigating.duration.saturating_sub(time.delta());
 
         if investigating.duration.is_zero() {
             command.entity(entity).remove::<ActionInvestigate>();
@@ -218,11 +294,12 @@ fn action_investigate(
     }
 }
 
-fn no_action(
+fn ensure_enemy_action(
     mut command: Commands,
     query: Query<
         Entity,
         (
+            With<EnemyTag>,
             Without<ActionChase>,
             Without<ActionIdle>,
             Without<ActionInvestigate>,
@@ -231,6 +308,7 @@ fn no_action(
     >,
 ) {
     for entity in &query {
+        println!("Adding ActionIdle to entity: {}", entity);
         command
             .entity(entity)
             .insert(ActionIdle(Duration::from_secs(IDLING_TIME)));

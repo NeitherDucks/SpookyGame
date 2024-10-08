@@ -6,4 +6,10 @@ edition = "2021"
 [dependencies]
 bevy = "0.14.2"
 bevy_dev_tools = "0.14.2"
+bevy_rand = {version = "0.7.1", features = ["wyrand"]}
 pathfinding = "4.11.0"
+rand_core = "0.6.4"
+
+# For building web
+[target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
+getrandom = { version = "0.2", features = ["js"] }

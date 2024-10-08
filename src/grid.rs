@@ -2,11 +2,14 @@
 // "Stolen" from https://www.youtube.com/watch?v=QTUEyAZmdv4
 
 use std::{
+    f32::consts::PI,
     marker::PhantomData,
     ops::{Index, IndexMut},
 };
 
 use bevy::prelude::*;
+
+use crate::utils::remap_rand_f32;
 
 pub const GRID_SIZE: usize = 20;
 
@@ -63,9 +66,22 @@ impl<T> Grid<T> {
             && location.y < GRID_SIZE as i32
     }
 
-    pub fn find_nearby(&self, location: &GridLocation, radius: u32) -> GridLocation {
+    pub fn find_nearby(
+        &self,
+        location: &GridLocation,
+        radius: u32,
+        rand_x: u32,
+        rand_y: u32,
+    ) -> GridLocation {
         // TODO
-        GridLocation(IVec2::ZERO)
+
+        let angle = remap_rand_f32(rand_x, 0., 2. * PI);
+        let dist = remap_rand_f32(rand_y, 0., radius as f32);
+
+        GridLocation::new(
+            location.x as u32 + (angle.cos() * dist) as u32,
+            location.y as u32 + (angle.sin() * dist) as u32,
+        )
     }
 }
 
@@ -92,7 +108,7 @@ impl GridLocation {
     }
 
     pub fn from_world(position: Vec2) -> Option<Self> {
-        let position = position + Vec2::splat(0.5);
+        let position = (position / 16.0) + Vec2::splat(0.5);
         let location = GridLocation(IVec2::new(position.x as i32, position.y as i32));
         if Grid::<()>::valid_index(&location) {
             Some(location)
@@ -102,7 +118,7 @@ impl GridLocation {
     }
 
     pub fn to_world(&self) -> Vec2 {
-        Vec2::new(self.x as f32, self.y as f32)
+        Vec2::new(self.x as f32 * 16., self.y as f32 * 16.)
     }
 
     pub fn distance(&self, other: &GridLocation) -> usize {
