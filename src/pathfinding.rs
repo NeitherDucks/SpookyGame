@@ -10,7 +10,7 @@ use crate::grid::{Grid, GridLocation, GRID_SIZE};
 
 pub struct PathfindingError;
 
-#[derive(Component)]
+#[derive(Clone, Default, Component)]
 pub struct Path {
     pub steps: VecDeque<GridLocation>,
 }

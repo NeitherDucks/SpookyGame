@@ -85,6 +85,7 @@ fn setup(
             ColliderOffset::ZERO,
             PlayerTag,
             PIXEL_PERFECT_LAYERS,
+            Name::new("Player"),
         ))
         .id();
 

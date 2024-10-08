@@ -1,6 +1,15 @@
+use std::time::{Duration, Instant};
+
 use bevy::prelude::*;
 
-use crate::states::{GameState, PlayingState};
+use crate::{
+    ai::idle::Idle,
+    collisions::{ColliderOffset, ColliderShape},
+    environment::Tile,
+    grid::{GridLocation, GRID_SIZE},
+    rendering::PIXEL_PERFECT_LAYERS,
+    states::{GameState, PlayingState},
+};
 
 #[derive(Component)]
 pub enum EnemyTag {
@@ -17,6 +26,27 @@ impl Plugin for EnemiesPlugin {
     }
 }
 
-fn setup() {}
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let enemy_texture: Handle<Image> = asset_server.load("2d/enemy_placeholder.png");
+
+    commands.spawn((
+        SpriteBundle {
+            texture: enemy_texture,
+            transform: Transform::from_translation(Vec3::new(
+                (GRID_SIZE / 2) as f32 * 16.,
+                (GRID_SIZE / 2) as f32 * 16.,
+                0.,
+            )),
+            ..default()
+        },
+        GridLocation::new(10, 10),
+        ColliderShape::Circle(Circle { radius: 8.0 }),
+        ColliderOffset::ZERO,
+        PIXEL_PERFECT_LAYERS,
+        Tile,
+        Name::new("Enemy"),
+        EnemyTag::Investigator,
+    ));
+}
 
 fn cleanup() {}
