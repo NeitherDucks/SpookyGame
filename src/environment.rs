@@ -7,6 +7,9 @@ use crate::{
     states::{GameState, PlayingState},
 };
 
+#[derive(Component, Default, Debug)]
+pub struct Tile;
+
 #[derive(Component)]
 pub struct EnvironmentTag;
 

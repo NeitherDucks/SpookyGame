@@ -16,7 +16,6 @@ impl Plugin for MainMenuPlugin {
 }
 
 fn setup(mut commands: Commands) {
-    // commands.spawn((Camera3dBundle { ..default() }, MainMenuCameraTag));
     commands
         .spawn((
             NodeBundle {
