@@ -8,10 +8,15 @@ use std::{
 };
 
 use bevy::prelude::*;
+use bevy_rand::prelude::{GlobalEntropy, WyRand};
+use rand_core::RngCore;
 
-use crate::utils::remap_rand_f32;
+use crate::{
+    config::{FIND_NEARBY_MAX_TRIES, GRID_SIZE},
+    utils::remap_rand_f32,
+};
 
-pub const GRID_SIZE: usize = 20;
+pub struct FindNearByError;
 
 #[derive(Default)]
 pub struct GridPlugin<T> {
@@ -70,22 +75,30 @@ impl<T> Grid<T> {
         &self,
         location: &GridLocation,
         radius: u32,
-        rand_x: u32,
-        rand_y: u32,
-    ) -> GridLocation {
+        rng: &mut GlobalEntropy<WyRand>,
+    ) -> Result<GridLocation, FindNearByError> {
         // TODO
 
-        let angle = remap_rand_f32(rand_x, 0., 2. * PI);
-        let dist = remap_rand_f32(rand_y, 0., radius as f32);
+        for _ in 0..FIND_NEARBY_MAX_TRIES {
+            let angle = remap_rand_f32(rng.next_u32(), 0., 2. * PI);
+            let dist = remap_rand_f32(rng.next_u32(), 0., radius as f32 * 16.);
 
-        GridLocation::new(
-            location.x as u32 + (angle.cos() * dist) as u32,
-            location.y as u32 + (angle.sin() * dist) as u32,
-        )
+            let new_world_pos =
+                location.to_world() + Vec2::new(angle.cos() * dist, angle.sin() * dist);
+
+            if let Some(nearby) = GridLocation::from_world(new_world_pos) {
+                if Grid::<T>::valid_index(&nearby) && !self.occupied(&nearby) {
+                    return Ok(nearby);
+                }
+            }
+        }
+
+        Err(FindNearByError)
     }
 }
 
-#[derive(Component, Default, Eq, PartialEq, Hash, Clone, Debug, Deref, DerefMut)]
+#[derive(Component, Reflect, Default, Eq, PartialEq, Hash, Clone, Debug, Deref, DerefMut)]
+#[reflect(Component)]
 pub struct GridLocation(pub IVec2);
 
 impl<T> Index<&GridLocation> for Grid<T> {

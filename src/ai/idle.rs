@@ -1,4 +1,4 @@
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 use bevy::prelude::*;
 
@@ -6,5 +6,12 @@ use bevy::prelude::*;
 #[component(storage = "SparseSet")]
 pub struct Idle {
     pub start: Instant,
-    pub duration: Duration,
+}
+
+impl Default for Idle {
+    fn default() -> Self {
+        Idle {
+            start: Instant::now(),
+        }
+    }
 }

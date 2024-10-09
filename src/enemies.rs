@@ -1,12 +1,10 @@
-use std::time::{Duration, Instant};
-
 use bevy::prelude::*;
 
 use crate::{
-    ai::idle::Idle,
     collisions::{ColliderOffset, ColliderShape},
+    config::GRID_SIZE,
     environment::Tile,
-    grid::{GridLocation, GRID_SIZE},
+    grid::GridLocation,
     rendering::PIXEL_PERFECT_LAYERS,
     states::{GameState, PlayingState},
 };

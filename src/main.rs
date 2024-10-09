@@ -14,6 +14,8 @@ mod rendering;
 mod states;
 mod utils;
 
+mod config;
+
 use ai::AiPlugin;
 use bevy::prelude::*;
 use bevy_dev_tools::states::log_transitions;

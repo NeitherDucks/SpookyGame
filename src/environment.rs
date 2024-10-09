@@ -3,8 +3,9 @@ use bevy::prelude::*;
 use crate::{
     animated_sprite::{AnimatedSprite, AnimationIndices, AnimationTimer, Animations},
     collisions::{ColliderOffset, ColliderShape},
+    config::GRID_SIZE,
     enemies::EnemyTag,
-    grid::{GridLocation, GRID_SIZE},
+    grid::GridLocation,
     rendering::PIXEL_PERFECT_LAYERS,
     states::{GameState, PlayingState},
 };

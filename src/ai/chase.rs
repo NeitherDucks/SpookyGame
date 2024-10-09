@@ -1,29 +1,72 @@
 use bevy::prelude::*;
 
-use crate::pathfinding::Path;
+use crate::{
+    environment::Tile,
+    grid::{Grid, GridLocation},
+    pathfinding::Path,
+};
 
-#[derive(Clone, Component)]
+use super::MovementSpeed;
+
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 #[component(storage = "SparseSet")]
 pub struct Chase {
     pub target: Entity,
-    pub speed: f32,
-    pub path: Path,
+    pub player_last_seen: GridLocation,
 }
 
-pub fn chase(
-    mut transform: Query<&mut Transform>,
-    chasing: Query<(Entity, &Chase)>,
-    time: Res<Time>,
+/// While [`Chase`], update [`Path`] to reflect target new position
+pub fn chase_update(
+    mut commands: Commands,
+    transform: Query<&Transform, Without<Chase>>,
+    mut chasing: Query<(Entity, &Transform, &mut Chase)>,
+    grid: Res<Grid<Tile>>,
 ) {
-    for (entity, chase) in &chasing {
-        // TODO: Switch to using pathfinding
-        let target_translation = transform.get(chase.target).unwrap().translation;
-        let follow_transform = &mut transform.get_mut(entity).unwrap();
-        let follow_translation = follow_transform.translation;
+    for (entity, entity_transform, mut chase) in &mut chasing {
+        let entity_position = entity_transform.translation.xy();
 
-        follow_transform.translation += (target_translation - follow_translation)
-            .normalize_or_zero()
-            * chase.speed
-            * time.delta_seconds();
+        let Ok(target_transform) = transform.get(chase.target) else {
+            continue;
+        };
+
+        let target_position = target_transform.translation.xy();
+
+        // Get current position on the grid
+        let start = GridLocation::from_world(entity_position);
+        // Get target position on the grid
+        let goal = GridLocation::from_world(target_position);
+
+        // If both are actually in the grid
+        if start.is_some() && goal.is_some() {
+            let start = start.unwrap();
+            let goal = goal.unwrap();
+
+            // Store last known position
+            chase.player_last_seen = goal.clone();
+
+            // Calculate path to target
+            let path = grid.path_to(&start, &goal);
+
+            // if found a valid path to target
+            if let Ok(path) = path {
+                commands.entity(entity).insert(path);
+            } else {
+                warn!("Could not find a Path from {} to {}", entity, chase.target);
+            }
+        } else {
+            warn!(
+                "Could not find a GridLocation for {} or {}",
+                entity, chase.target
+            );
+        }
+    }
+}
+
+/// When [`Chase`] is removed, remove any [`Path`] and [`MovementSpeed`].
+pub fn chase_on_exit(mut commands: Commands, mut query: RemovedComponents<Chase>) {
+    for entity in query.read() {
+        commands.entity(entity).remove::<Path>();
+        commands.entity(entity).remove::<MovementSpeed>();
     }
 }
