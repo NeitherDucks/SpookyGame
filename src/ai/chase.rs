@@ -1,10 +1,13 @@
 use bevy::prelude::*;
 
+use crate::pathfinding::Path;
+
 #[derive(Clone, Component)]
 #[component(storage = "SparseSet")]
 pub struct Chase {
     pub target: Entity,
     pub speed: f32,
+    pub path: Path,
 }
 
 pub fn chase(
@@ -13,6 +16,7 @@ pub fn chase(
     time: Res<Time>,
 ) {
     for (entity, chase) in &chasing {
+        // TODO: Switch to using pathfinding
         let target_translation = transform.get(chase.target).unwrap().translation;
         let follow_transform = &mut transform.get_mut(entity).unwrap();
         let follow_translation = follow_transform.translation;

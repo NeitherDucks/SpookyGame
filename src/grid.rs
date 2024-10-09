@@ -85,7 +85,7 @@ impl<T> Grid<T> {
     }
 }
 
-#[derive(Component, Eq, PartialEq, Hash, Clone, Debug, Deref, DerefMut)]
+#[derive(Component, Default, Eq, PartialEq, Hash, Clone, Debug, Deref, DerefMut)]
 pub struct GridLocation(pub IVec2);
 
 impl<T> Index<&GridLocation> for Grid<T> {
