@@ -23,7 +23,6 @@ pub fn run_away_on_enter(
     grid: Res<Grid<Tile>>,
     mut rng: ResMut<GlobalEntropy<WyRand>>,
 ) {
-    // IMPROVEME: While running away and seeing an Investigator, will switch to going to the investigator and tell him where the villager seen the player.
     for (entity, transform, run_away) in &query {
         if let Some(entity_grid_location) = GridLocation::from_world(transform.translation.xy()) {
             if let Ok(target) = grid.find_away_from(

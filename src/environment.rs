@@ -1,10 +1,8 @@
 use bevy::prelude::*;
 
 use crate::{
-    animated_sprite::{AnimatedSprite, AnimationIndices, AnimationTimer, Animations},
     collisions::{ColliderOffset, ColliderShape},
     config::GRID_SIZE,
-    enemies::EnemyTag,
     grid::GridLocation,
     rendering::PIXEL_PERFECT_LAYERS,
     states::{GameState, PlayingState},
@@ -105,7 +103,6 @@ fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
-    mut animations: ResMut<Animations>,
 ) {
     // // Load Textures and Animations
     // let player_texture: Handle<Image> = asset_server.load("2d/player_placeholder.png");
