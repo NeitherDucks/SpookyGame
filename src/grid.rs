@@ -8,10 +8,15 @@ use std::{
 };
 
 use bevy::prelude::*;
+use bevy_rand::prelude::{GlobalEntropy, WyRand};
+use rand_core::RngCore;
 
-use crate::utils::remap_rand_f32;
+use crate::{
+    config::{FIND_NEARBY_MAX_TRIES, GRID_SIZE, MAX_RUN_AWAY_ANGLE},
+    utils::remap_rand_f32,
+};
 
-pub const GRID_SIZE: usize = 20;
+pub struct GridFindError;
 
 #[derive(Default)]
 pub struct GridPlugin<T> {
@@ -70,22 +75,59 @@ impl<T> Grid<T> {
         &self,
         location: &GridLocation,
         radius: u32,
-        rand_x: u32,
-        rand_y: u32,
-    ) -> GridLocation {
-        // TODO
+        rng: &mut GlobalEntropy<WyRand>,
+    ) -> Result<GridLocation, GridFindError> {
+        for _ in 0..FIND_NEARBY_MAX_TRIES {
+            let angle = remap_rand_f32(rng.next_u32(), 0., 2. * PI);
+            let dist = remap_rand_f32(rng.next_u32(), 0., radius as f32 * 16.);
 
-        let angle = remap_rand_f32(rand_x, 0., 2. * PI);
-        let dist = remap_rand_f32(rand_y, 0., radius as f32);
+            let new_world_pos =
+                location.to_world() + Vec2::new(angle.cos() * dist, angle.sin() * dist);
 
-        GridLocation::new(
-            location.x as u32 + (angle.cos() * dist) as u32,
-            location.y as u32 + (angle.sin() * dist) as u32,
-        )
+            if let Some(nearby) = GridLocation::from_world(new_world_pos) {
+                if Grid::<T>::valid_index(&nearby) && !self.occupied(&nearby) {
+                    return Ok(nearby);
+                }
+            }
+        }
+
+        Err(GridFindError)
+    }
+
+    pub fn find_away_from(
+        &self,
+        location: &GridLocation,
+        away_from: &GridLocation,
+        radius: &[u32; 2],
+        rng: &mut GlobalEntropy<WyRand>,
+    ) -> Result<GridLocation, GridFindError> {
+        for _ in 0..FIND_NEARBY_MAX_TRIES {
+            let away_dir = (location.to_world() - away_from.to_world()).normalize_or_zero();
+
+            let angle = away_dir.y.atan2(away_dir.x)
+                + remap_rand_f32(
+                    rng.next_u32(),
+                    -MAX_RUN_AWAY_ANGLE.to_radians(),
+                    MAX_RUN_AWAY_ANGLE.to_radians(),
+                );
+            let dist = remap_rand_f32(rng.next_u32(), radius[0] as f32, radius[1] as f32);
+
+            let new_world_pos =
+                away_from.to_world() + Vec2::new(angle.cos() * dist, angle.sin() * dist);
+
+            if let Some(away) = GridLocation::from_world(new_world_pos) {
+                if Grid::<T>::valid_index(&away) && !self.occupied(&away) {
+                    return Ok(away);
+                }
+            }
+        }
+
+        Err(GridFindError)
     }
 }
 
-#[derive(Component, Eq, PartialEq, Hash, Clone, Debug, Deref, DerefMut)]
+#[derive(Component, Reflect, Default, Eq, PartialEq, Hash, Clone, Copy, Debug, Deref, DerefMut)]
+#[reflect(Component)]
 pub struct GridLocation(pub IVec2);
 
 impl<T> Index<&GridLocation> for Grid<T> {

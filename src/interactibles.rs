@@ -1,6 +1,14 @@
 use bevy::prelude::*;
 
-use crate::states::{GameState, PlayingState};
+use crate::{
+    grid::GridLocation,
+    states::{GameState, PlayingState},
+};
+
+#[derive(Component)]
+pub struct InteractibleTriggered {
+    pub location: GridLocation,
+}
 
 pub struct InteractiblesPlugin;
 

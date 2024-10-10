@@ -1,10 +1,9 @@
 use bevy::prelude::*;
 
 use crate::{
-    animated_sprite::{AnimatedSprite, AnimationIndices, AnimationTimer, Animations},
     collisions::{ColliderOffset, ColliderShape},
-    enemies::EnemyTag,
-    grid::{GridLocation, GRID_SIZE},
+    config::GRID_SIZE,
+    grid::GridLocation,
     rendering::PIXEL_PERFECT_LAYERS,
     states::{GameState, PlayingState},
 };
@@ -26,7 +25,6 @@ impl Plugin for EnvironmentPlugin {
 
 fn setup_grid_test(mut commands: Commands, asset_server: Res<AssetServer>) {
     let wall_texture: Handle<Image> = asset_server.load("2d/blocker_placeholder.png");
-    let enemy_texture: Handle<Image> = asset_server.load("2d/enemy_placeholder.png");
 
     for i in 0..GRID_SIZE {
         commands.spawn((
@@ -99,31 +97,12 @@ fn setup_grid_test(mut commands: Commands, asset_server: Res<AssetServer>) {
             Tile,
         ));
     }
-
-    commands.spawn((
-        SpriteBundle {
-            texture: enemy_texture,
-            transform: Transform::from_translation(Vec3::new(
-                (GRID_SIZE / 2) as f32 * 16.,
-                (GRID_SIZE / 2) as f32 * 16.,
-                0.,
-            )),
-            ..default()
-        },
-        GridLocation::new(10, 10),
-        ColliderShape::Circle(Circle { radius: 8.0 }),
-        ColliderOffset::ZERO,
-        PIXEL_PERFECT_LAYERS,
-        Tile,
-        EnemyTag::Investigator,
-    ));
 }
 
 fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
-    mut animations: ResMut<Animations>,
 ) {
     // // Load Textures and Animations
     // let player_texture: Handle<Image> = asset_server.load("2d/player_placeholder.png");

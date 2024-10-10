@@ -14,9 +14,12 @@ mod rendering;
 mod states;
 mod utils;
 
+mod config;
+
 use ai::AiPlugin;
 use bevy::prelude::*;
 use bevy_dev_tools::states::log_transitions;
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rand::plugin::EntropyPlugin;
 use bevy_rand::prelude::WyRand;
 use collisions::CollisionsPlugin;
@@ -36,6 +39,7 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins.set(ImagePlugin::default_nearest()),
+            WorldInspectorPlugin::new(), // for debug
             EntropyPlugin::<WyRand>::default(),
             RenderingPlugin,
             GridPlugin::<Tile>::default(),

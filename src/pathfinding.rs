@@ -6,11 +6,15 @@ use std::collections::VecDeque;
 use bevy::prelude::*;
 use pathfinding::prelude::astar;
 
-use crate::grid::{Grid, GridLocation, GRID_SIZE};
+use crate::{
+    config::GRID_SIZE,
+    grid::{Grid, GridLocation},
+};
 
 pub struct PathfindingError;
 
-#[derive(Component)]
+#[derive(Clone, Reflect, Default, Component)]
+#[reflect(Component)]
 pub struct Path {
     pub steps: VecDeque<GridLocation>,
 }
@@ -34,9 +38,12 @@ impl<T> Grid<T> {
         );
 
         if let Some((steps, _length)) = result {
-            Ok(Path {
-                steps: steps.into(),
-            })
+            // Convert to VecDeque
+            let mut steps: VecDeque<GridLocation> = steps.into();
+            // Remove the first node, as it's always the one the entity is on
+            steps.pop_front();
+            // Return a path with the steps
+            Ok(Path { steps: steps })
         } else {
             Err(PathfindingError)
         }
