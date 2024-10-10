@@ -1,39 +1,40 @@
 use bevy::prelude::*;
 
 use crate::{
-    config::CHASE_SPEED,
+    config::RUNNING_SPEED,
     environment::Tile,
     grid::{Grid, GridLocation},
     pathfinding::Path,
 };
 
-use super::MovementSpeed;
+use super::{run_away::RunAway, MovementSpeed};
 
-#[derive(Reflect, Clone, Component)]
-#[reflect(Component)]
+#[derive(Clone, Component)]
 #[component(storage = "SparseSet")]
-pub struct Chase {
-    pub target: Entity,
+pub struct TalkToInvestigator {
+    pub investigator: Entity,
     pub player_last_seen: GridLocation,
 }
 
-pub fn chase_on_enter(mut commands: Commands, query: Query<Entity, Added<Chase>>) {
+pub fn talk_to_investigator_on_enter(
+    mut commands: Commands,
+    query: Query<Entity, Added<TalkToInvestigator>>,
+) {
     for entity in &query {
-        commands.entity(entity).insert(MovementSpeed(CHASE_SPEED));
+        commands.entity(entity).insert(MovementSpeed(RUNNING_SPEED));
     }
 }
 
-/// While [`Chase`], update [`Path`] to reflect target new position
-pub fn chase_update(
+pub fn talk_to_investigator_update(
     mut commands: Commands,
-    transform: Query<&Transform, Without<Chase>>,
-    mut query: Query<(Entity, &Transform, &mut Chase)>,
+    transform: Query<&Transform, Without<TalkToInvestigator>>,
+    mut query: Query<(Entity, &Transform, &TalkToInvestigator)>,
     grid: Res<Grid<Tile>>,
 ) {
-    for (entity, entity_transform, mut chase) in &mut query {
+    for (entity, entity_transform, talk) in &mut query {
         let entity_position = entity_transform.translation.xy();
 
-        let Ok(target_transform) = transform.get(chase.target) else {
+        let Ok(target_transform) = transform.get(talk.investigator) else {
             continue;
         };
 
@@ -49,29 +50,28 @@ pub fn chase_update(
             let start = start.unwrap();
             let goal = goal.unwrap();
 
-            // Store last known position
-            chase.player_last_seen = goal.clone();
-
             // Calculate path to target
             let path = grid.path_to(&start, &goal);
 
             // if found a valid path to target
             if let Ok(path) = path {
                 commands.entity(entity).insert(path);
-            } else {
-                warn!("Could not find a Path from {} to {}", entity, chase.target);
+                continue;
             }
-        } else {
-            warn!(
-                "Could not find a GridLocation for {} or {}",
-                entity, chase.target
-            );
         }
+
+        // Could not find a path to the investigator, abandon trying and go back to running away.
+        commands.entity(entity).remove::<TalkToInvestigator>();
+        commands.entity(entity).insert(RunAway {
+            player_last_seen: talk.player_last_seen,
+        });
     }
 }
 
-/// When [`Chase`] is removed, remove any [`Path`] and [`MovementSpeed`].
-pub fn chase_on_exit(mut commands: Commands, mut query: RemovedComponents<Chase>) {
+pub fn talk_to_investigator_on_exit(
+    mut commands: Commands,
+    mut query: RemovedComponents<TalkToInvestigator>,
+) {
     for entity in query.read() {
         commands.entity(entity).remove::<Path>();
         commands.entity(entity).remove::<MovementSpeed>();

@@ -1,27 +1,29 @@
-use std::time::{Duration, Instant};
-
 // Very simple "AI"
 // Execute different Actions based on which component exists on the Entity
+use std::time::{Duration, Instant};
+
 use bevy::{app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*};
 
 mod chase;
 pub mod idle;
 mod investigate;
 mod run_away;
+mod talk_to_investigator;
 mod wander;
 
-use chase::{chase_on_enter, chase_on_exit, chase_update, Chase};
-use idle::Idle;
-use investigate::{investigate_on_enter, investigate_on_exit, investigate_update, Investigate};
-use run_away::{run_away_on_enter, run_away_on_exit, RunAway};
-use wander::{wander_on_enter, wander_on_exit, Wander};
+use chase::*;
+use idle::*;
+use investigate::*;
+use run_away::*;
+use talk_to_investigator::*;
+use wander::*;
 
 use crate::{
     config::{
-        CHASE_SPEED, IDLING_TIME, INVESTIGATING_TIME, KILLING_DISTANCE, NORMAL_SPEED,
-        PLAYER_VISIBLE_DISTANCE_INVESTIGATOR, PLAYER_VISIBLE_DISTANCE_VILLAGERS, RUNNING_SPEED,
+        IDLING_TIME, INTERACTION_DISTANCE, INVESTIGATING_TIME, INVESTIGATOR_VIEW_HALF_ANGLE,
+        INVESTIGATOR_VIEW_RANGE, VILLAGERS_VIEW_HALF_ANGLE, VILLAGERS_VIEW_RANGE,
     },
-    enemies::EnemyTag,
+    enemies::{Aim, EnemyTag},
     grid::GridLocation,
     interactibles::InteractibleTriggered,
     pathfinding::Path,
@@ -29,12 +31,16 @@ use crate::{
     states::PlayingState,
 };
 
+// All the logic for transitioning from different Tasks will be executed during this schedule.
 #[derive(ScheduleLabel, Debug, Clone, PartialEq, Eq, Hash)]
 struct AiTransition;
 
+// All logic when entering a task will be executed during this schedule.
 #[derive(ScheduleLabel, Debug, Clone, PartialEq, Eq, Hash)]
 struct AiOnEnter;
 
+// All logic when leaving a task will be executed during this schedule.
+// This is executed before AiOnEnter, so we can clean up nicely and not interfer with components added in the AiOnEnter phase.
 #[derive(ScheduleLabel, Debug, Clone, PartialEq, Eq, Hash)]
 struct AiOnExit;
 
@@ -62,7 +68,6 @@ impl Plugin for AiPlugin {
         app.add_systems(
             AiTransition,
             (
-                nothing_to_idle,
                 notice_player,
                 idle_to_wandering,
                 wandering_to_idle,
@@ -71,6 +76,8 @@ impl Plugin for AiPlugin {
                 chasing_to_killing,
                 investigating_to_idle,
                 run_away_to_idle,
+                running_away_to_talk_to_investigator,
+                talk_to_investigator_to_running_away,
             )
                 .run_if(in_state(PlayingState::Playing)),
         )
@@ -81,6 +88,7 @@ impl Plugin for AiPlugin {
                 investigate_on_exit,
                 run_away_on_exit,
                 wander_on_exit,
+                talk_to_investigator_on_exit,
             )
                 .run_if(in_state(PlayingState::Playing)),
         )
@@ -91,28 +99,35 @@ impl Plugin for AiPlugin {
                 investigate_on_enter,
                 run_away_on_enter,
                 wander_on_enter,
+                talk_to_investigator_on_enter,
             )
                 .run_if(in_state(PlayingState::Playing)),
         )
         .add_systems(
             Update,
-            (chase_update, investigate_update, follow_path).run_if(in_state(PlayingState::Playing)),
+            (
+                chase_update,
+                investigate_update,
+                talk_to_investigator_update,
+                follow_path,
+            )
+                .run_if(in_state(PlayingState::Playing)),
         )
         .add_systems(
             PostUpdate,
-            check_empty_path.run_if(in_state(PlayingState::Playing)),
+            (check_empty_path, nothing_to_idle).run_if(in_state(PlayingState::Playing)),
         )
         .register_type::<Chase>();
     }
 }
 
-/// When Enemies are created, add a default [`Idle`] task.
+/// Default [`Idle`] if no AI taks found for enemy entity.
 fn nothing_to_idle(
     mut commands: Commands,
     query: Query<
         Entity,
         (
-            Added<EnemyTag>,
+            With<EnemyTag>,
             Without<Chase>,
             Without<Idle>,
             Without<Investigate>,
@@ -132,66 +147,139 @@ fn notice_player(
     query: Query<(
         Entity,
         &Transform,
+        &Aim,
         &EnemyTag,
         AnyOf<(&Idle, &Investigate, &Wander)>,
     )>,
     player: Query<(Entity, &Transform), With<PlayerTag>>,
 ) {
     if let Ok((player, player_transform)) = player.get_single() {
-        for (entity, transform, tag, _) in &query {
+        for (entity, transform, aim, tag, _) in &query {
             let distance_threshold = match tag {
-                EnemyTag::Investigator => PLAYER_VISIBLE_DISTANCE_INVESTIGATOR,
-                EnemyTag::Villager => PLAYER_VISIBLE_DISTANCE_VILLAGERS,
+                EnemyTag::Investigator => INVESTIGATOR_VIEW_RANGE,
+                EnemyTag::Villager => VILLAGERS_VIEW_RANGE,
             };
 
-            // TODO: Check if player is roughly in front.
-            if transform
-                .translation
-                .xy()
-                .distance(player_transform.translation.xy())
-                < distance_threshold
-            {
-                let mut entity_cmd = commands.entity(entity);
+            let angle_threshold = match tag {
+                EnemyTag::Investigator => INVESTIGATOR_VIEW_HALF_ANGLE,
+                EnemyTag::Villager => VILLAGERS_VIEW_HALF_ANGLE,
+            };
 
-                // Removing inexisting component seems fine (nothing is screaming at me).
-                entity_cmd.remove::<Idle>();
-                entity_cmd.remove::<Investigate>();
-                entity_cmd.remove::<Wander>();
+            let player_location = player_transform.translation.xy();
+            let enemy_location = transform.translation.xy();
 
-                // Get player position on grid, if fails, idles.
-                if let Some(player_grid_position) =
-                    GridLocation::from_world(player_transform.translation.xy())
+            // Check if player is withing range.
+            if enemy_location.distance(player_location) < distance_threshold {
+                // Check if player is roughly in front.
+                if aim
+                    .direction
+                    .dot((enemy_location - player_location).normalize())
+                    < angle_threshold.cos()
                 {
-                    match tag {
-                        // If Enemy is an Investigator, chase the player.
-                        EnemyTag::Investigator => {
-                            entity_cmd.insert(Chase {
-                                target: player,
-                                player_last_seen: player_grid_position,
-                            });
+                    // Removing inexisting component seems fine (nothing is screaming at me).
+                    commands.entity(entity).remove::<Idle>();
+                    commands.entity(entity).remove::<Investigate>();
+                    commands.entity(entity).remove::<Wander>();
+
+                    // Get player position on grid, if fails, idles.
+                    if let Some(player_grid_position) =
+                        GridLocation::from_world(player_transform.translation.xy())
+                    {
+                        match tag {
+                            // If Enemy is an Investigator, chase the player.
+                            EnemyTag::Investigator => {
+                                commands.entity(entity).insert(Chase {
+                                    target: player,
+                                    player_last_seen: player_grid_position,
+                                });
+                            }
+                            // If enemy is a Villager, run away from player.
+                            EnemyTag::Villager => {
+                                commands.entity(entity).insert(RunAway {
+                                    player_last_seen: player_grid_position,
+                                });
+                            }
                         }
-                        // If enemy is a Villager, run away from player.
-                        EnemyTag::Villager => {
-                            // TODO: Choose proper target to run away to and pathfind to it
-                            entity_cmd.insert(RunAway {
-                                player_last_seen: player_grid_position,
-                            });
-                        }
-                    }
-                } else {
-                    entity_cmd.insert(Idle::default());
-                    continue;
-                };
+                    } else {
+                        commands.entity(entity).insert(Idle::default());
+                        continue;
+                    };
+                }
             }
         }
     }
 }
 
-/// After the timer for [`Idle`] expires swtich to [`Idle`].
+/// If any [`RunAway`] find an investigator on their path, swtich to going to talk to them.
+fn running_away_to_talk_to_investigator(
+    mut commands: Commands,
+    query: Query<(Entity, &Transform, &Aim, &RunAway)>,
+    query2: Query<(Entity, &Transform, &EnemyTag), Without<Chase>>,
+) {
+    for (entity, transform, aim, run_away) in &query {
+        for (investigator, investigator_transform, tag) in &query2 {
+            if *tag == EnemyTag::Investigator {
+                let investigator_location = investigator_transform.translation.xy();
+                let entity_locaton = transform.translation.xy();
+
+                // Check if investigator is withing range.
+                if investigator_location.distance(entity_locaton) < VILLAGERS_VIEW_RANGE {
+                    // Check if investigator is within view.
+                    if aim
+                        .direction
+                        .dot((investigator_location - entity_locaton).normalize())
+                        < VILLAGERS_VIEW_HALF_ANGLE.cos()
+                    {
+                        commands.entity(entity).remove::<RunAway>();
+
+                        commands.entity(entity).insert(TalkToInvestigator {
+                            investigator,
+                            player_last_seen: run_away.player_last_seen,
+                        });
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// If [`TalkToInvestigator`] and in reach of said investigator, switch to [`RunAway`], and swtich that investigator to [`Investigate`] the player's last seen location.
+fn talk_to_investigator_to_running_away(
+    mut commands: Commands,
+    transforms: Query<&Transform, Without<TalkToInvestigator>>,
+    query: Query<(Entity, &Transform, &TalkToInvestigator)>,
+) {
+    for (entity, entity_transform, talk) in &query {
+        if let Ok(investigator_transform) = transforms.get(talk.investigator) {
+            if investigator_transform
+                .translation
+                .xy()
+                .distance(entity_transform.translation.xy())
+                <= INTERACTION_DISTANCE
+            {
+                commands.entity(talk.investigator).remove::<Idle>();
+                commands.entity(talk.investigator).remove::<Investigate>();
+                commands.entity(talk.investigator).remove::<Wander>();
+
+                commands.entity(talk.investigator).insert(Investigate {
+                    start: Instant::now(),
+                    target: talk.player_last_seen,
+                });
+
+                commands.entity(entity).remove::<TalkToInvestigator>();
+
+                commands.entity(entity).insert(RunAway {
+                    player_last_seen: talk.player_last_seen,
+                });
+            }
+        }
+    }
+}
+
+/// After the timer for [`Idle`] expires switch to [`Idle`].
 fn idle_to_wandering(mut commands: Commands, query: Query<(Entity, &Idle)>) {
     for (entity, idle) in &query {
         if idle.start.elapsed() >= Duration::from_secs(IDLING_TIME) {
-            // TODO: Pick random location and pathfind to it
             commands.entity(entity).remove::<Idle>();
 
             commands.entity(entity).insert(Wander);
@@ -259,7 +347,7 @@ fn chasing_to_killing(
                 .translation
                 .xy()
                 .distance(player_transform.translation.xy())
-                <= KILLING_DISTANCE
+                <= INTERACTION_DISTANCE
             {
                 commands.entity(entity).remove::<Chase>();
 
@@ -282,15 +370,20 @@ fn investigating_to_idle(mut commands: Commands, query: Query<(Entity, &Investig
 }
 
 /// If has a [`Path`], move the entity along.
-fn follow_path(mut paths: Query<(&mut Transform, &mut Path, &MovementSpeed)>, time: Res<Time>) {
-    for (mut transform, mut path, speed) in &mut paths {
+fn follow_path(
+    mut paths: Query<(&mut Transform, &mut Path, &MovementSpeed, &mut Aim)>,
+    time: Res<Time>,
+) {
+    for (mut transform, mut path, speed, mut aim) in &mut paths {
         if let Some(next_target) = path.steps.front() {
             let delta = next_target.to_world() - transform.translation.xy();
             let travel_amount = time.delta_seconds() * speed.0;
 
             if delta.length() > travel_amount * 1.1 {
-                let direction = delta.normalize_or_zero().extend(0.) * travel_amount;
-                transform.translation += direction;
+                let direction = delta.normalize_or_zero();
+                let travel = direction.extend(0.) * travel_amount;
+                transform.translation += travel;
+                aim.direction = direction;
             } else {
                 path.steps.pop_front();
             }

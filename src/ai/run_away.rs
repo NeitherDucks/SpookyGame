@@ -1,13 +1,11 @@
 use bevy::prelude::*;
 use bevy_rand::prelude::{GlobalEntropy, WyRand};
-use rand_core::RngCore;
 
 use crate::{
     config::{MAX_RUN_AWAY_RADIUS, MIN_RUN_AWAY_RADIUS, RUNNING_SPEED},
     environment::Tile,
     grid::{Grid, GridLocation},
     pathfinding::Path,
-    utils::remap_rand_u32,
 };
 
 use super::MovementSpeed;
@@ -21,21 +19,22 @@ pub struct RunAway {
 /// When [`RunAway`] is added, generate [`Path`].
 pub fn run_away_on_enter(
     mut commands: Commands,
-    query: Query<(Entity, &Transform), Added<RunAway>>,
+    query: Query<(Entity, &Transform, &RunAway), Added<RunAway>>,
     grid: Res<Grid<Tile>>,
     mut rng: ResMut<GlobalEntropy<WyRand>>,
 ) {
-    // TODO: Actually run away from the player, not in a random direction, but the oposite.
     // IMPROVEME: While running away and seeing an Investigator, will switch to going to the investigator and tell him where the villager seen the player.
-    for (entity, transform) in &query {
-        commands.entity(entity).insert(MovementSpeed(RUNNING_SPEED));
-
+    for (entity, transform, run_away) in &query {
         if let Some(entity_grid_location) = GridLocation::from_world(transform.translation.xy()) {
-            let radius = remap_rand_u32(rng.next_u32(), MIN_RUN_AWAY_RADIUS, MAX_RUN_AWAY_RADIUS);
-
-            if let Ok(target) = grid.find_nearby(&entity_grid_location, radius, rng.as_mut()) {
+            if let Ok(target) = grid.find_away_from(
+                &entity_grid_location,
+                &run_away.player_last_seen,
+                &[MIN_RUN_AWAY_RADIUS, MAX_RUN_AWAY_RADIUS],
+                rng.as_mut(),
+            ) {
                 if let Ok(path) = grid.path_to(&entity_grid_location, &target) {
                     commands.entity(entity).insert(path);
+                    commands.entity(entity).insert(MovementSpeed(RUNNING_SPEED));
                 }
             }
         };

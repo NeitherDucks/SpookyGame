@@ -9,10 +9,15 @@ use crate::{
     states::{GameState, PlayingState},
 };
 
-#[derive(Component)]
+#[derive(Component, PartialEq, Eq)]
 pub enum EnemyTag {
     Investigator,
     Villager,
+}
+
+#[derive(Component)]
+pub struct Aim {
+    pub direction: Vec2,
 }
 
 pub struct EnemiesPlugin;
@@ -37,13 +42,14 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             )),
             ..default()
         },
-        GridLocation::new(10, 10),
         ColliderShape::Circle(Circle { radius: 8.0 }),
+        Aim {
+            direction: Vec2::new(1., 0.),
+        },
         ColliderOffset::ZERO,
         PIXEL_PERFECT_LAYERS,
-        Tile,
+        EnemyTag::Villager,
         Name::new("Enemy"),
-        EnemyTag::Investigator,
     ));
 }
 
