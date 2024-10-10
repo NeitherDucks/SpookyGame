@@ -3,7 +3,7 @@ use bevy_rand::prelude::{GlobalEntropy, WyRand};
 use rand_core::RngCore;
 
 use crate::{
-    config::{MAX_RUN_AWAY_RADIUS, MIN_RUN_AWAY_RADIUS},
+    config::{MAX_RUN_AWAY_RADIUS, MIN_RUN_AWAY_RADIUS, RUNNING_SPEED},
     environment::Tile,
     grid::{Grid, GridLocation},
     pathfinding::Path,
@@ -28,6 +28,8 @@ pub fn run_away_on_enter(
     // TODO: Actually run away from the player, not in a random direction, but the oposite.
     // IMPROVEME: While running away and seeing an Investigator, will switch to going to the investigator and tell him where the villager seen the player.
     for (entity, transform) in &query {
+        commands.entity(entity).insert(MovementSpeed(RUNNING_SPEED));
+
         if let Some(entity_grid_location) = GridLocation::from_world(transform.translation.xy()) {
             let radius = remap_rand_u32(rng.next_u32(), MIN_RUN_AWAY_RADIUS, MAX_RUN_AWAY_RADIUS);
 

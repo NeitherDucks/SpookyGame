@@ -77,8 +77,6 @@ impl<T> Grid<T> {
         radius: u32,
         rng: &mut GlobalEntropy<WyRand>,
     ) -> Result<GridLocation, FindNearByError> {
-        // TODO
-
         for _ in 0..FIND_NEARBY_MAX_TRIES {
             let angle = remap_rand_f32(rng.next_u32(), 0., 2. * PI);
             let dist = remap_rand_f32(rng.next_u32(), 0., radius as f32 * 16.);

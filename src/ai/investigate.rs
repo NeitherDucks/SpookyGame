@@ -1,10 +1,10 @@
 use std::time::Instant;
 
-use bevy::prelude::*;
+use bevy::{ecs::query, prelude::*};
 use bevy_rand::prelude::{GlobalEntropy, WyRand};
 
 use crate::{
-    config::INVESTIGATING_RADIUS,
+    config::{INVESTIGATING_RADIUS, NORMAL_SPEED},
     environment::Tile,
     grid::{Grid, GridLocation},
     pathfinding::Path,
@@ -17,6 +17,12 @@ use super::MovementSpeed;
 pub struct Investigate {
     pub target: GridLocation,
     pub start: Instant,
+}
+
+pub fn investigate_on_enter(mut commands: Commands, query: Query<Entity, Added<Investigate>>) {
+    for entity in &query {
+        commands.entity(entity).insert(MovementSpeed(NORMAL_SPEED));
+    }
 }
 
 /// When entity doens't have a [`Path`], pick a location around the [`Investigate`].target, within [`Investigate`].range

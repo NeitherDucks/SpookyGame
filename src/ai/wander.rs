@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_rand::prelude::{GlobalEntropy, WyRand};
 
 use crate::{
-    config::WANDERING_RADIUS,
+    config::{NORMAL_SPEED, WANDERING_RADIUS},
     environment::Tile,
     grid::{Grid, GridLocation},
     pathfinding::Path,
@@ -22,6 +22,8 @@ pub fn wander_on_enter(
     mut rng: ResMut<GlobalEntropy<WyRand>>,
 ) {
     for (entity, transform) in &query {
+        commands.entity(entity).insert(MovementSpeed(NORMAL_SPEED));
+
         if let Some(entity_grid_location) = GridLocation::from_world(transform.translation.xy()) {
             if let Ok(target) =
                 grid.find_nearby(&entity_grid_location, WANDERING_RADIUS, rng.as_mut())

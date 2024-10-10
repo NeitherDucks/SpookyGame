@@ -1,6 +1,7 @@
-use bevy::prelude::*;
+use bevy::{ecs::query, prelude::*};
 
 use crate::{
+    config::CHASE_SPEED,
     environment::Tile,
     grid::{Grid, GridLocation},
     pathfinding::Path,
@@ -16,14 +17,20 @@ pub struct Chase {
     pub player_last_seen: GridLocation,
 }
 
+pub fn chase_on_enter(mut commands: Commands, query: Query<Entity, Added<Chase>>) {
+    for entity in &query {
+        commands.entity(entity).insert(MovementSpeed(CHASE_SPEED));
+    }
+}
+
 /// While [`Chase`], update [`Path`] to reflect target new position
 pub fn chase_update(
     mut commands: Commands,
     transform: Query<&Transform, Without<Chase>>,
-    mut chasing: Query<(Entity, &Transform, &mut Chase)>,
+    mut query: Query<(Entity, &Transform, &mut Chase)>,
     grid: Res<Grid<Tile>>,
 ) {
-    for (entity, entity_transform, mut chase) in &mut chasing {
+    for (entity, entity_transform, mut chase) in &mut query {
         let entity_position = entity_transform.translation.xy();
 
         let Ok(target_transform) = transform.get(chase.target) else {

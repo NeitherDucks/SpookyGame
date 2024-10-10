@@ -2,7 +2,7 @@
 
 pub const PLAYER_VISIBLE_DISTANCE_INVESTIGATOR: f32 = 5. * 16.;
 pub const PLAYER_VISIBLE_DISTANCE_VILLAGERS: f32 = 3. * 16.;
-pub const KILLING_DISTANCE: f32 = 1. * 16.;
+pub const KILLING_DISTANCE: f32 = 1.1 * 16.;
 
 pub const NORMAL_SPEED: f32 = 75.0;
 pub const RUNNING_SPEED: f32 = 90.0;

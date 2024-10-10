@@ -10,9 +10,9 @@ mod investigate;
 mod run_away;
 mod wander;
 
-use chase::{chase_on_exit, chase_update, Chase};
+use chase::{chase_on_enter, chase_on_exit, chase_update, Chase};
 use idle::Idle;
-use investigate::{investigate_on_exit, investigate_update, Investigate};
+use investigate::{investigate_on_enter, investigate_on_exit, investigate_update, Investigate};
 use run_away::{run_away_on_enter, run_away_on_exit, RunAway};
 use wander::{wander_on_enter, wander_on_exit, Wander};
 
@@ -86,7 +86,13 @@ impl Plugin for AiPlugin {
         )
         .add_systems(
             AiOnEnter,
-            (wander_on_enter, run_away_on_enter).run_if(in_state(PlayingState::Playing)),
+            (
+                chase_on_enter,
+                investigate_on_enter,
+                run_away_on_enter,
+                wander_on_enter,
+            )
+                .run_if(in_state(PlayingState::Playing)),
         )
         .add_systems(
             Update,
@@ -100,8 +106,7 @@ impl Plugin for AiPlugin {
     }
 }
 
-/// Check if any Enemies doesn't have any tasks, if so add a default [`Idle`] task.
-// IMPROVEME: Probably not a good idea, since it has to check every frame
+/// When Enemies are created, add a default [`Idle`] task.
 fn nothing_to_idle(
     mut commands: Commands,
     query: Query<
@@ -154,36 +159,29 @@ fn notice_player(
                 entity_cmd.remove::<Wander>();
 
                 // Get player position on grid, if fails, idles.
-                let Some(player_grid_position) =
+                if let Some(player_grid_position) =
                     GridLocation::from_world(player_transform.translation.xy())
-                else {
+                {
+                    match tag {
+                        // If Enemy is an Investigator, chase the player.
+                        EnemyTag::Investigator => {
+                            entity_cmd.insert(Chase {
+                                target: player,
+                                player_last_seen: player_grid_position,
+                            });
+                        }
+                        // If enemy is a Villager, run away from player.
+                        EnemyTag::Villager => {
+                            // TODO: Choose proper target to run away to and pathfind to it
+                            entity_cmd.insert(RunAway {
+                                player_last_seen: player_grid_position,
+                            });
+                        }
+                    }
+                } else {
                     entity_cmd.insert(Idle::default());
                     continue;
                 };
-
-                match tag {
-                    // If Enemy is an Investigator, chase the player.
-                    EnemyTag::Investigator => {
-                        entity_cmd.insert((
-                            Chase {
-                                target: player,
-                                player_last_seen: player_grid_position,
-                            },
-                            MovementSpeed(CHASE_SPEED),
-                        ));
-                    }
-                    // If enemy is a Villager, run away from player.
-                    EnemyTag::Villager => {
-                        // TODO: Choose proper target to run away to and pathfind to it
-                        // IMPROVEME: Run away to the nearest investigator, which will trigger them to investigate where the player was seen
-                        entity_cmd.insert((
-                            RunAway {
-                                player_last_seen: player_grid_position,
-                            },
-                            MovementSpeed(RUNNING_SPEED),
-                        ));
-                    }
-                }
             }
         }
     }
@@ -196,9 +194,7 @@ fn idle_to_wandering(mut commands: Commands, query: Query<(Entity, &Idle)>) {
             // TODO: Pick random location and pathfind to it
             commands.entity(entity).remove::<Idle>();
 
-            commands
-                .entity(entity)
-                .insert((Wander, MovementSpeed(NORMAL_SPEED)));
+            commands.entity(entity).insert(Wander);
         }
     }
 }
@@ -230,13 +226,10 @@ fn idle_or_wandering_to_investigating(
         commands.entity(entity).remove::<Idle>();
         commands.entity(entity).remove::<Wander>();
 
-        commands.entity(entity).insert((
-            Investigate {
-                target: interactible.location.clone(),
-                start: Instant::now(),
-            },
-            MovementSpeed(NORMAL_SPEED),
-        ));
+        commands.entity(entity).insert(Investigate {
+            target: interactible.location.clone(),
+            start: Instant::now(),
+        });
     }
 }
 
@@ -247,13 +240,10 @@ fn chasing_to_investigating(mut commands: Commands, query: Query<(Entity, &Chase
 
         commands.entity(entity).remove::<Chase>();
 
-        commands.entity(entity).insert((
-            Investigate {
-                target: last_kown_location,
-                start: Instant::now(),
-            },
-            MovementSpeed(RUNNING_SPEED),
-        ));
+        commands.entity(entity).insert(Investigate {
+            target: last_kown_location,
+            start: Instant::now(),
+        });
     }
 }
 
@@ -274,6 +264,7 @@ fn chasing_to_killing(
                 commands.entity(entity).remove::<Chase>();
 
                 // TODO: Add death
+                warn!("Player died!");
             }
         }
     }
@@ -291,15 +282,14 @@ fn investigating_to_idle(mut commands: Commands, query: Query<(Entity, &Investig
 }
 
 /// If has a [`Path`], move the entity along.
-/// FIXME: This isn't really working, entity will jitter around a node
 fn follow_path(mut paths: Query<(&mut Transform, &mut Path, &MovementSpeed)>, time: Res<Time>) {
     for (mut transform, mut path, speed) in &mut paths {
         if let Some(next_target) = path.steps.front() {
             let delta = next_target.to_world() - transform.translation.xy();
-            let travel_amount = time.delta_seconds();
+            let travel_amount = time.delta_seconds() * speed.0;
 
             if delta.length() > travel_amount * 1.1 {
-                let direction = delta.normalize_or_zero().extend(0.) * travel_amount * speed.0;
+                let direction = delta.normalize_or_zero().extend(0.) * travel_amount;
                 transform.translation += direction;
             } else {
                 path.steps.pop_front();
