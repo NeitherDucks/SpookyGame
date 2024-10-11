@@ -1,11 +1,8 @@
 mod ai;
-mod animated_sprite;
 mod collisions;
-mod enemies;
-mod environment;
 mod game_mode;
 mod grid;
-mod interactibles;
+mod ldtk;
 mod main_menu;
 mod pathfinding;
 mod pause_menu;
@@ -23,11 +20,10 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rand::plugin::EntropyPlugin;
 use bevy_rand::prelude::WyRand;
 use collisions::CollisionsPlugin;
-use enemies::EnemiesPlugin;
-use environment::{EnvironmentPlugin, Tile};
 use game_mode::GamePlugin;
-use grid::GridPlugin;
-use interactibles::InteractiblesPlugin;
+use grid::{collision_gizmos, GridPlugin, Tile};
+use ldtk::MyLdtkPlugin;
+use pathfinding::pathfinding_gizmos;
 use pause_menu::PauseMenuPlugin;
 use player::PlayerPlugin;
 use rendering::RenderingPlugin;
@@ -47,13 +43,12 @@ fn main() {
             MainMenuPlugin,
             PauseMenuPlugin,
             GamePlugin,
-            EnvironmentPlugin,
-            InteractiblesPlugin,
-            EnemiesPlugin,
+            MyLdtkPlugin,
             PlayerPlugin,
             AiPlugin,
         ))
         .init_state::<GameState>()
         .add_systems(Update, log_transitions::<GameState>)
+        .add_systems(Update, (pathfinding_gizmos, collision_gizmos))
         .run();
 }

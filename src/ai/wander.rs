@@ -1,10 +1,10 @@
 use bevy::prelude::*;
+use bevy_ecs_ldtk::GridCoords;
 use bevy_rand::prelude::{GlobalEntropy, WyRand};
 
 use crate::{
     config::{NORMAL_SPEED, WANDERING_RADIUS},
-    environment::Tile,
-    grid::{Grid, GridLocation},
+    grid::{Grid, Tile},
     pathfinding::Path,
 };
 
@@ -17,19 +17,15 @@ pub struct Wander;
 /// When [`Wander`] is added, generate a target and a [`Path`].
 pub fn wander_on_enter(
     mut commands: Commands,
-    query: Query<(Entity, &Transform), Added<Wander>>,
+    query: Query<(Entity, &GridCoords), Added<Wander>>,
     grid: Res<Grid<Tile>>,
     mut rng: ResMut<GlobalEntropy<WyRand>>,
 ) {
-    for (entity, transform) in &query {
-        if let Some(entity_grid_location) = GridLocation::from_world(transform.translation.xy()) {
-            if let Ok(target) =
-                grid.find_nearby(&entity_grid_location, WANDERING_RADIUS, rng.as_mut())
-            {
-                if let Ok(path) = grid.path_to(&entity_grid_location, &target) {
-                    commands.entity(entity).insert(path);
-                    commands.entity(entity).insert(MovementSpeed(NORMAL_SPEED));
-                }
+    for (entity, coords) in &query {
+        if let Ok(target) = grid.find_nearby(&coords, WANDERING_RADIUS, rng.as_mut()) {
+            if let Ok(path) = grid.path_to(&coords, &target) {
+                commands.entity(entity).insert(path);
+                commands.entity(entity).insert(MovementSpeed(NORMAL_SPEED));
             }
         }
     }

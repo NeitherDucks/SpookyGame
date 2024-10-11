@@ -1,9 +1,9 @@
 use bevy::prelude::*;
+use bevy_ecs_ldtk::GridCoords;
 
 use crate::{
     config::RUNNING_SPEED,
-    environment::Tile,
-    grid::{Grid, GridLocation},
+    grid::{Grid, Tile},
     pathfinding::Path,
 };
 
@@ -13,7 +13,7 @@ use super::{run_away::RunAway, MovementSpeed};
 #[component(storage = "SparseSet")]
 pub struct TalkToInvestigator {
     pub investigator: Entity,
-    pub player_last_seen: GridLocation,
+    pub player_last_seen: GridCoords,
 }
 
 pub fn talk_to_investigator_on_enter(
@@ -27,37 +27,22 @@ pub fn talk_to_investigator_on_enter(
 
 pub fn talk_to_investigator_update(
     mut commands: Commands,
-    transform: Query<&Transform, Without<TalkToInvestigator>>,
-    mut query: Query<(Entity, &Transform, &TalkToInvestigator)>,
+    coords: Query<&GridCoords, Without<TalkToInvestigator>>,
+    mut query: Query<(Entity, &GridCoords, &TalkToInvestigator)>,
     grid: Res<Grid<Tile>>,
 ) {
-    for (entity, entity_transform, talk) in &mut query {
-        let entity_position = entity_transform.translation.xy();
-
-        let Ok(target_transform) = transform.get(talk.investigator) else {
+    for (entity, entity_coords, talk) in &mut query {
+        let Ok(target_coords) = coords.get(talk.investigator) else {
             continue;
         };
 
-        let target_position = target_transform.translation.xy();
+        // Calculate path to target
+        let path = grid.path_to(&entity_coords, &target_coords);
 
-        // Get current position on the grid
-        let start = GridLocation::from_world(entity_position);
-        // Get target position on the grid
-        let goal = GridLocation::from_world(target_position);
-
-        // If both are actually in the grid
-        if start.is_some() && goal.is_some() {
-            let start = start.unwrap();
-            let goal = goal.unwrap();
-
-            // Calculate path to target
-            let path = grid.path_to(&start, &goal);
-
-            // if found a valid path to target
-            if let Ok(path) = path {
-                commands.entity(entity).insert(path);
-                continue;
-            }
+        // if found a valid path to target
+        if let Ok(path) = path {
+            commands.entity(entity).insert(path);
+            continue;
         }
 
         // Could not find a path to the investigator, abandon trying and go back to running away.

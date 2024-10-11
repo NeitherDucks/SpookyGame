@@ -7,6 +7,7 @@ edition = "2021"
 bevy = "0.14.2"
 bevy-inspector-egui = "0.26.0"
 bevy_dev_tools = "0.14.2"
+bevy_ecs_ldtk = "0.10.0"
 bevy_rand = {version = "0.7.1", features = ["wyrand"]}
 pathfinding = "4.11.0"
 rand_core = "0.6.4"

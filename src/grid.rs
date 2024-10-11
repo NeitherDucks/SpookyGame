@@ -8,13 +8,17 @@ use std::{
 };
 
 use bevy::prelude::*;
+use bevy_ecs_ldtk::{utils::grid_coords_to_translation, GridCoords};
 use bevy_rand::prelude::{GlobalEntropy, WyRand};
 use rand_core::RngCore;
 
 use crate::{
-    config::{FIND_NEARBY_MAX_TRIES, GRID_SIZE, MAX_RUN_AWAY_ANGLE},
+    config::{FIND_NEARBY_MAX_TRIES, GRID_SIZE, MAX_RUN_AWAY_ANGLE, TILE_SIZE},
     utils::remap_rand_f32,
 };
+
+#[derive(Component, Default, Debug)]
+pub struct Tile;
 
 pub struct GridFindError;
 
@@ -37,7 +41,7 @@ pub struct DirtyGridEvent<T>(pub GridLocation, PhantomData<T>);
 
 #[derive(Resource)]
 pub struct Grid<T> {
-    pub entities: [[Option<Entity>; GRID_SIZE]; GRID_SIZE],
+    pub entities: [[Option<Entity>; GRID_SIZE.x as usize]; GRID_SIZE.y as usize],
     _marker: PhantomData<T>,
 }
 
@@ -53,7 +57,7 @@ impl<T> Clone for Grid<T> {
 impl<T> Default for Grid<T> {
     fn default() -> Self {
         Self {
-            entities: [[None; GRID_SIZE]; GRID_SIZE],
+            entities: [[None; GRID_SIZE.x as usize]; GRID_SIZE.y as usize],
             _marker: Default::default(),
         }
     }
@@ -65,18 +69,17 @@ impl<T> Grid<T> {
     }
 
     pub fn valid_index(location: &GridLocation) -> bool {
-        location.x >= 0
-            && location.y >= 0
-            && location.x < GRID_SIZE as i32
-            && location.y < GRID_SIZE as i32
+        location.x >= 0 && location.y >= 0 && location.x < GRID_SIZE.x && location.y < GRID_SIZE.y
     }
 
     pub fn find_nearby(
         &self,
-        location: &GridLocation,
+        location: &GridCoords,
         radius: u32,
         rng: &mut GlobalEntropy<WyRand>,
-    ) -> Result<GridLocation, GridFindError> {
+    ) -> Result<GridCoords, GridFindError> {
+        let location = GridLocation::from(*location);
+
         for _ in 0..FIND_NEARBY_MAX_TRIES {
             let angle = remap_rand_f32(rng.next_u32(), 0., 2. * PI);
             let dist = remap_rand_f32(rng.next_u32(), 0., radius as f32 * 16.);
@@ -86,7 +89,7 @@ impl<T> Grid<T> {
 
             if let Some(nearby) = GridLocation::from_world(new_world_pos) {
                 if Grid::<T>::valid_index(&nearby) && !self.occupied(&nearby) {
-                    return Ok(nearby);
+                    return Ok(nearby.into());
                 }
             }
         }
@@ -96,11 +99,14 @@ impl<T> Grid<T> {
 
     pub fn find_away_from(
         &self,
-        location: &GridLocation,
-        away_from: &GridLocation,
+        location: &GridCoords,
+        away_from: &GridCoords,
         radius: &[u32; 2],
         rng: &mut GlobalEntropy<WyRand>,
-    ) -> Result<GridLocation, GridFindError> {
+    ) -> Result<GridCoords, GridFindError> {
+        let location = GridLocation::from(*location);
+        let away_from = GridLocation::from(*away_from);
+
         for _ in 0..FIND_NEARBY_MAX_TRIES {
             let away_dir = (location.to_world() - away_from.to_world()).normalize_or_zero();
 
@@ -117,7 +123,7 @@ impl<T> Grid<T> {
 
             if let Some(away) = GridLocation::from_world(new_world_pos) {
                 if Grid::<T>::valid_index(&away) && !self.occupied(&away) {
-                    return Ok(away);
+                    return Ok(away.into());
                 }
             }
         }
@@ -144,9 +150,21 @@ impl<T> IndexMut<&GridLocation> for Grid<T> {
     }
 }
 
+impl From<GridCoords> for GridLocation {
+    fn from(value: GridCoords) -> Self {
+        GridLocation::new(value.x, value.y)
+    }
+}
+
+impl From<GridLocation> for GridCoords {
+    fn from(value: GridLocation) -> Self {
+        GridCoords::new(value.x, value.y)
+    }
+}
+
 impl GridLocation {
-    pub fn new(x: u32, y: u32) -> Self {
-        GridLocation(IVec2::new(x as i32, y as i32))
+    pub fn new(x: i32, y: i32) -> Self {
+        GridLocation(IVec2::new(x, y))
     }
 
     pub fn from_world(position: Vec2) -> Option<Self> {
@@ -178,7 +196,7 @@ impl<T> Grid<T> {
             .map(|(i, entity)| {
                 (
                     entity.unwrap(),
-                    GridLocation::new(i as u32 / GRID_SIZE as u32, i as u32 % GRID_SIZE as u32),
+                    GridLocation::new(i as i32 / GRID_SIZE.x, i as i32 % GRID_SIZE.y),
                 )
             })
     }
@@ -203,7 +221,7 @@ fn remove_from_grid<T: Component>(
 
 fn add_to_grid<T: Component>(
     mut grid: ResMut<Grid<T>>,
-    query: Query<(Entity, &GridLocation), Added<T>>,
+    query: Query<(Entity, &GridLocation), (Added<GridLocation>, With<T>)>,
     mut dirty: EventWriter<DirtyGridEvent<T>>,
 ) {
     for (entity, location) in &query {
@@ -222,6 +240,25 @@ fn add_to_grid<T: Component>(
                 PhantomData::default(),
             ));
             grid[location] = Some(entity);
+        }
+    }
+}
+
+pub fn collision_gizmos(mut gizmos: Gizmos, coords: Query<&GridCoords>, grid: Res<Grid<Tile>>) {
+    for grid_y in grid.entities {
+        for entity in grid_y {
+            if let Some(entity) = entity {
+                if let Ok(coord) = coords.get(entity) {
+                    let position = grid_coords_to_translation(*coord, TILE_SIZE);
+
+                    gizmos.rect_2d(
+                        position,
+                        0.,
+                        Vec2::new(TILE_SIZE.x as f32, TILE_SIZE.y as f32),
+                        Color::srgb(0., 0., 0.),
+                    );
+                }
+            }
         }
     }
 }
