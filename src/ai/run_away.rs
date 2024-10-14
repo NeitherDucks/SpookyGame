@@ -1,10 +1,10 @@
 use bevy::prelude::*;
+use bevy_ecs_ldtk::GridCoords;
 use bevy_rand::prelude::{GlobalEntropy, WyRand};
 
 use crate::{
     config::{MAX_RUN_AWAY_RADIUS, MIN_RUN_AWAY_RADIUS, RUNNING_SPEED},
-    environment::Tile,
-    grid::{Grid, GridLocation},
+    grid::{Grid, Tile},
     pathfinding::Path,
 };
 
@@ -13,30 +13,28 @@ use super::MovementSpeed;
 #[derive(Clone, Component)]
 #[component(storage = "SparseSet")]
 pub struct RunAway {
-    pub player_last_seen: GridLocation,
+    pub player_last_seen: GridCoords,
 }
 
 /// When [`RunAway`] is added, generate [`Path`].
 pub fn run_away_on_enter(
     mut commands: Commands,
-    query: Query<(Entity, &Transform, &RunAway), Added<RunAway>>,
+    query: Query<(Entity, &GridCoords, &RunAway), Added<RunAway>>,
     grid: Res<Grid<Tile>>,
     mut rng: ResMut<GlobalEntropy<WyRand>>,
 ) {
-    for (entity, transform, run_away) in &query {
-        if let Some(entity_grid_location) = GridLocation::from_world(transform.translation.xy()) {
-            if let Ok(target) = grid.find_away_from(
-                &entity_grid_location,
-                &run_away.player_last_seen,
-                &[MIN_RUN_AWAY_RADIUS, MAX_RUN_AWAY_RADIUS],
-                rng.as_mut(),
-            ) {
-                if let Ok(path) = grid.path_to(&entity_grid_location, &target) {
-                    commands.entity(entity).insert(path);
-                    commands.entity(entity).insert(MovementSpeed(RUNNING_SPEED));
-                }
+    for (entity, coords, run_away) in &query {
+        if let Ok(target) = grid.find_away_from(
+            &coords,
+            &run_away.player_last_seen,
+            &[MIN_RUN_AWAY_RADIUS, MAX_RUN_AWAY_RADIUS],
+            rng.as_mut(),
+        ) {
+            if let Ok(path) = grid.path_to(&coords, &target) {
+                commands.entity(entity).insert(path);
+                commands.entity(entity).insert(MovementSpeed(RUNNING_SPEED));
             }
-        };
+        }
     }
 }
 

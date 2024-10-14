@@ -1,9 +1,6 @@
-use std::collections::HashMap;
-
 use bevy::prelude::*;
 use bevy_dev_tools::states::log_transitions;
 
-use crate::animated_sprite::{animate_sprite, Animations};
 use crate::states::{GameState, PlayingState};
 
 pub struct GamePlugin;
@@ -11,7 +8,6 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_sub_state::<PlayingState>()
-            .insert_resource(Animations(HashMap::new()))
             .add_systems(OnEnter(GameState::Playing), setup)
             .add_systems(OnEnter(PlayingState::Loading), load)
             .add_systems(OnEnter(PlayingState::IntroScene), intro_scene_setup)
@@ -19,8 +15,7 @@ impl Plugin for GamePlugin {
                 Update,
                 intro_scene_update.run_if(in_state(PlayingState::IntroScene)),
             )
-            .add_systems(Update, log_transitions::<PlayingState>)
-            .add_systems(Update, animate_sprite);
+            .add_systems(Update, log_transitions::<PlayingState>);
     }
 }
 

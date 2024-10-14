@@ -1,12 +1,12 @@
 use std::time::Instant;
 
 use bevy::prelude::*;
+use bevy_ecs_ldtk::GridCoords;
 use bevy_rand::prelude::{GlobalEntropy, WyRand};
 
 use crate::{
     config::{INVESTIGATING_RADIUS, RUNNING_SPEED},
-    environment::Tile,
-    grid::{Grid, GridLocation},
+    grid::{Grid, Tile},
     pathfinding::Path,
 };
 
@@ -15,7 +15,7 @@ use super::MovementSpeed;
 #[derive(Clone, Component)]
 #[component(storage = "SparseSet")]
 pub struct Investigate {
-    pub target: GridLocation,
+    pub target: GridCoords,
     pub start: Instant,
 }
 
@@ -28,18 +28,16 @@ pub fn investigate_on_enter(mut commands: Commands, query: Query<Entity, Added<I
 /// When entity doens't have a [`Path`], pick a location around the [`Investigate`].target, within [`Investigate`].range
 pub fn investigate_update(
     mut commands: Commands,
-    investigate: Query<(Entity, &Transform, &Investigate), Without<Path>>,
+    investigate: Query<(Entity, &GridCoords, &Investigate), Without<Path>>,
     grid: Res<Grid<Tile>>,
     mut rng: ResMut<GlobalEntropy<WyRand>>,
 ) {
-    for (entity, transform, investigate) in &investigate {
-        if let Some(current_grid_position) = GridLocation::from_world(transform.translation.xy()) {
-            if let Ok(new_target) =
-                grid.find_nearby(&investigate.target, INVESTIGATING_RADIUS, rng.as_mut())
-            {
-                if let Ok(path) = grid.path_to(&current_grid_position, &new_target) {
-                    commands.entity(entity).insert(path);
-                }
+    for (entity, coords, investigate) in &investigate {
+        if let Ok(new_target) =
+            grid.find_nearby(&investigate.target, INVESTIGATING_RADIUS, rng.as_mut())
+        {
+            if let Ok(path) = grid.path_to(&coords, &new_target) {
+                commands.entity(entity).insert(path);
             }
         }
     }

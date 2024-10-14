@@ -3,9 +3,10 @@
 use std::time::{Duration, Instant};
 
 use bevy::{app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*};
+use bevy_ecs_ldtk::{utils::grid_coords_to_translation, GridCoords};
 
 mod chase;
-pub mod idle;
+mod idle;
 mod investigate;
 mod run_away;
 mod talk_to_investigator;
@@ -19,15 +20,11 @@ use talk_to_investigator::*;
 use wander::*;
 
 use crate::{
-    config::{
-        IDLING_TIME, INTERACTION_DISTANCE, INVESTIGATING_TIME, INVESTIGATOR_VIEW_HALF_ANGLE,
-        INVESTIGATOR_VIEW_RANGE, VILLAGERS_VIEW_HALF_ANGLE, VILLAGERS_VIEW_RANGE,
-    },
-    enemies::{Aim, EnemyTag},
-    grid::GridLocation,
-    interactibles::InteractibleTriggered,
+    collisions::Collider,
+    config::*,
+    ldtk::entities::{Aim, EnemyTag, InteractibleTriggered},
     pathfinding::Path,
-    player::PlayerTag,
+    player::{is_player_visible, PlayerTag},
     states::PlayingState,
 };
 
@@ -144,6 +141,7 @@ fn nothing_to_idle(
 /// In any [`Idle`], [`Investigate`] or [`Wander`], and the player is nearby and in the field of vision of an Enemy, either [`Chase`] or [`RunAway`].
 fn notice_player(
     mut commands: Commands,
+    player: Query<(Entity, &GridCoords, &Transform, &Collider), With<PlayerTag>>,
     query: Query<(
         Entity,
         &Transform,
@@ -151,10 +149,9 @@ fn notice_player(
         &EnemyTag,
         AnyOf<(&Idle, &Investigate, &Wander)>,
     )>,
-    player: Query<(Entity, &Transform), With<PlayerTag>>,
 ) {
-    if let Ok((player, player_transform)) = player.get_single() {
-        for (entity, transform, aim, tag, _) in &query {
+    if let Ok((player, player_coords, player_transform, player_collider)) = player.get_single() {
+        for (entity, entity_transform, aim, tag, _) in &query {
             let distance_threshold = match tag {
                 EnemyTag::Investigator => INVESTIGATOR_VIEW_RANGE,
                 EnemyTag::Villager => VILLAGERS_VIEW_RANGE,
@@ -166,44 +163,36 @@ fn notice_player(
             };
 
             let player_location = player_transform.translation.xy();
-            let enemy_location = transform.translation.xy();
+            let enemy_location = entity_transform.translation.xy();
 
-            // Check if player is withing range.
-            if enemy_location.distance(player_location) < distance_threshold {
-                // Check if player is roughly in front.
-                if aim
-                    .direction
-                    .dot((enemy_location - player_location).normalize())
-                    < angle_threshold.cos()
-                {
-                    // Removing inexisting component seems fine (nothing is screaming at me).
-                    commands.entity(entity).remove::<Idle>();
-                    commands.entity(entity).remove::<Investigate>();
-                    commands.entity(entity).remove::<Wander>();
+            // Check if player is visible.
+            if is_player_visible(
+                player_location,
+                enemy_location,
+                *aim,
+                distance_threshold,
+                angle_threshold,
+                player_collider,
+            ) {
+                // Removing inexisting component seems fine (nothing is screaming at me).
+                commands.entity(entity).remove::<Idle>();
+                commands.entity(entity).remove::<Investigate>();
+                commands.entity(entity).remove::<Wander>();
 
-                    // Get player position on grid, if fails, idles.
-                    if let Some(player_grid_position) =
-                        GridLocation::from_world(player_transform.translation.xy())
-                    {
-                        match tag {
-                            // If Enemy is an Investigator, chase the player.
-                            EnemyTag::Investigator => {
-                                commands.entity(entity).insert(Chase {
-                                    target: player,
-                                    player_last_seen: player_grid_position,
-                                });
-                            }
-                            // If enemy is a Villager, run away from player.
-                            EnemyTag::Villager => {
-                                commands.entity(entity).insert(RunAway {
-                                    player_last_seen: player_grid_position,
-                                });
-                            }
-                        }
-                    } else {
-                        commands.entity(entity).insert(Idle::default());
-                        continue;
-                    };
+                match tag {
+                    // If Enemy is an Investigator, chase the player.
+                    EnemyTag::Investigator => {
+                        commands.entity(entity).insert(Chase {
+                            target: player,
+                            player_last_seen: *player_coords,
+                        });
+                    }
+                    // If enemy is a Villager, run away from player.
+                    EnemyTag::Villager => {
+                        commands.entity(entity).insert(RunAway {
+                            player_last_seen: *player_coords,
+                        });
+                    }
                 }
             }
         }
@@ -226,7 +215,7 @@ fn running_away_to_talk_to_investigator(
                 if investigator_location.distance(entity_locaton) < VILLAGERS_VIEW_RANGE {
                     // Check if investigator is within view.
                     if aim
-                        .direction
+                        .0
                         .dot((investigator_location - entity_locaton).normalize())
                         < VILLAGERS_VIEW_HALF_ANGLE.cos()
                     {
@@ -315,7 +304,7 @@ fn idle_or_wandering_to_investigating(
         commands.entity(entity).remove::<Wander>();
 
         commands.entity(entity).insert(Investigate {
-            target: interactible.location.clone(),
+            target: interactible.location,
             start: Instant::now(),
         });
     }
@@ -371,19 +360,20 @@ fn investigating_to_idle(mut commands: Commands, query: Query<(Entity, &Investig
 
 /// If has a [`Path`], move the entity along.
 fn follow_path(
-    mut paths: Query<(&mut Transform, &mut Path, &MovementSpeed, &mut Aim)>,
+    mut query: Query<(&mut Transform, &mut Path, &MovementSpeed, &mut Aim)>,
     time: Res<Time>,
 ) {
-    for (mut transform, mut path, speed, mut aim) in &mut paths {
+    for (mut transform, mut path, speed, mut aim) in &mut query {
         if let Some(next_target) = path.steps.front() {
-            let delta = next_target.to_world() - transform.translation.xy();
+            let delta =
+                grid_coords_to_translation(*next_target, TILE_SIZE) - transform.translation.xy();
             let travel_amount = time.delta_seconds() * speed.0;
 
             if delta.length() > travel_amount * 1.1 {
                 let direction = delta.normalize_or_zero();
                 let travel = direction.extend(0.) * travel_amount;
                 transform.translation += travel;
-                aim.direction = direction;
+                aim.0 = direction;
             } else {
                 path.steps.pop_front();
             }
