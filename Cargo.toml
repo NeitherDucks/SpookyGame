@@ -9,7 +9,7 @@ bevy-inspector-egui = "0.26.0"
 bevy_dev_tools = "0.14.2"
 bevy_ecs_ldtk = "0.10.0"
 bevy_rand = {version = "0.7.1", features = ["wyrand"]}
-bevy_rapier2d = "0.27.0"
+bevy_rapier2d = {version="0.27.0", features = ["debug-render-2d"]}
 pathfinding = "4.11.0"
 rand_core = "0.6.4"
 

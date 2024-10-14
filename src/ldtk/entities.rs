@@ -46,7 +46,7 @@ impl Default for ColliderBundle {
     fn default() -> Self {
         ColliderBundle {
             collider: Collider::cuboid(8., 8.),
-            rigid_body: RigidBody::Dynamic,
+            rigid_body: RigidBody::Fixed,
             friction: Friction {
                 coefficient: 0.0,
                 combine_rule: CoefficientCombineRule::Min,
@@ -194,10 +194,7 @@ impl Default for CollisionTileBundle {
     fn default() -> Self {
         CollisionTileBundle {
             tile: Tile,
-            collider: ColliderBundle {
-                rigid_body: RigidBody::Fixed,
-                ..Default::default()
-            },
+            collider: ColliderBundle::default(),
         }
     }
 }

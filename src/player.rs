@@ -1,8 +1,10 @@
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::KinematicCharacterController;
+use bevy_rapier2d::{
+    plugin::RapierContext,
+    prelude::{KinematicCharacterController, QueryFilter},
+};
 
 use crate::{
-    collisions::{test_ray, Collider},
     config::PLAYER_SPEED,
     ldtk::entities::Aim,
     rendering::InGameCamera,
@@ -109,31 +111,51 @@ fn escape_pressed(
 }
 
 pub fn is_player_visible(
+    player: Entity,
+    other: Entity,
     player_location: Vec2,
     other_location: Vec2,
     other_aim: Aim,
     max_distance: f32,
     max_angle: f32,
-    player_collider: &Collider,
+    rapier_context: &Res<RapierContext>,
+    gizmos: &mut Gizmos,
 ) -> bool {
     // Check if player is withing range.
+    gizmos.arc_2d(
+        other_location,
+        other_aim.0.to_angle() - 90f32.to_radians(),
+        max_angle.to_radians(),
+        max_distance,
+        Color::srgb(1.0, 1.0, 1.0),
+    );
+
     if other_location.distance(player_location) < max_distance {
-        let dir = (other_location - player_location).normalize();
+        let dir = (player_location - other_location).normalize();
 
         // Check if player is roughly in front.
-        if other_aim.0.dot(dir) < max_angle.cos() {
+        if other_aim.0.dot(-dir) < max_angle.cos() {
             // Check of player is not behind wall.
-            if let Ok(dir) = Dir2::new(dir) {
-                let ray = Ray2d {
-                    origin: other_location,
-                    direction: dir,
+            let filter = QueryFilter::exclude_dynamic()
+                .exclude_sensors()
+                .exclude_rigid_body(other);
+            // .exclude_rigid_body(player);
+
+            gizmos.line_2d(other_location, player_location, Color::srgb(1.0, 1.0, 0.0));
+
+            let result =
+                rapier_context.cast_ray(other_location, dir, max_distance + 8., true, filter);
+
+            if let Some((entity, rio)) = result {
+                let color = match entity == player {
+                    true => Color::srgb(1.0, 0.0, 1.0),
+                    false => Color::srgb(1.0, 1.0, 0.0),
                 };
 
-                return !test_ray(
-                    ray,
-                    other_location.distance(player_location) * 1.1,
-                    player_collider,
-                );
+                let hit_pos = other_location + (dir * rio);
+                gizmos.circle_2d(hit_pos, 5.0, color);
+
+                return entity == player;
             }
         }
     }

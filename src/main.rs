@@ -1,5 +1,4 @@
 mod ai;
-mod collisions;
 mod game_mode;
 mod grid;
 mod ldtk;
@@ -21,7 +20,6 @@ use bevy_rand::plugin::EntropyPlugin;
 use bevy_rand::prelude::WyRand;
 use bevy_rapier2d::plugin::{NoUserData, RapierConfiguration, RapierPhysicsPlugin, TimestepMode};
 use bevy_rapier2d::render::RapierDebugRenderPlugin;
-use collisions::CollisionsPlugin;
 use config::PIXEL_PER_TILE;
 use game_mode::GamePlugin;
 use grid::{collision_gizmos, GridPlugin, Tile};
@@ -44,7 +42,6 @@ fn main() {
             EntropyPlugin::<WyRand>::default(),
             RenderingPlugin,
             GridPlugin::<Tile>::default(),
-            CollisionsPlugin,
             MainMenuPlugin,
             PauseMenuPlugin,
             GamePlugin,
@@ -66,6 +63,6 @@ fn main() {
         })
         .init_state::<GameState>()
         .add_systems(Update, log_transitions::<GameState>)
-        .add_systems(Update, (pathfinding_gizmos, collision_gizmos))
+        .add_systems(Update, pathfinding_gizmos)
         .run();
 }

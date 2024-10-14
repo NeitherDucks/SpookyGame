@@ -12,6 +12,7 @@ mod run_away;
 mod talk_to_investigator;
 mod wander;
 
+use bevy_rapier2d::plugin::RapierContext;
 use chase::*;
 use idle::*;
 use investigate::*;
@@ -20,7 +21,6 @@ use talk_to_investigator::*;
 use wander::*;
 
 use crate::{
-    collisions::Collider,
     config::*,
     ldtk::entities::{Aim, EnemyTag, InteractibleTriggered},
     pathfinding::Path,
@@ -141,7 +141,8 @@ fn nothing_to_idle(
 /// In any [`Idle`], [`Investigate`] or [`Wander`], and the player is nearby and in the field of vision of an Enemy, either [`Chase`] or [`RunAway`].
 fn notice_player(
     mut commands: Commands,
-    player: Query<(Entity, &GridCoords, &Transform, &Collider), With<PlayerTag>>,
+    transforms: Query<&Transform, (Without<PlayerTag>, Without<EnemyTag>)>,
+    player: Query<(Entity, &GridCoords, &Transform), With<PlayerTag>>,
     query: Query<(
         Entity,
         &Transform,
@@ -149,8 +150,10 @@ fn notice_player(
         &EnemyTag,
         AnyOf<(&Idle, &Investigate, &Wander)>,
     )>,
+    rapier_context: Res<RapierContext>,
+    mut gizmos: Gizmos,
 ) {
-    if let Ok((player, player_coords, player_transform, player_collider)) = player.get_single() {
+    if let Ok((player, player_coords, player_transform)) = player.get_single() {
         for (entity, entity_transform, aim, tag, _) in &query {
             let distance_threshold = match tag {
                 EnemyTag::Investigator => INVESTIGATOR_VIEW_RANGE,
@@ -166,14 +169,19 @@ fn notice_player(
             let enemy_location = entity_transform.translation.xy();
 
             // Check if player is visible.
-            if is_player_visible(
+            let result = is_player_visible(
+                player,
+                entity,
                 player_location,
                 enemy_location,
                 *aim,
                 distance_threshold,
                 angle_threshold,
-                player_collider,
-            ) {
+                &rapier_context,
+                &mut gizmos,
+            );
+
+            if result {
                 // Removing inexisting component seems fine (nothing is screaming at me).
                 commands.entity(entity).remove::<Idle>();
                 commands.entity(entity).remove::<Investigate>();

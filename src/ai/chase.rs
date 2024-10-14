@@ -2,9 +2,9 @@ use std::time::Instant;
 
 use bevy::prelude::*;
 use bevy_ecs_ldtk::GridCoords;
+use bevy_rapier2d::plugin::RapierContext;
 
 use crate::{
-    collisions::Collider,
     config::CHASE_SPEED,
     grid::{Grid, Tile},
     ldtk::entities::Aim,
@@ -31,13 +31,15 @@ pub fn chase_on_enter(mut commands: Commands, query: Query<Entity, Added<Chase>>
 /// While [`Chase`], update [`Path`] to reflect target new position
 pub fn chase_update(
     mut commands: Commands,
-    player: Query<(&GridCoords, &Transform, &Collider), With<PlayerTag>>,
+    transforms: Query<&Transform, (Without<PlayerTag>, Without<Chase>)>,
+    player: Query<(Entity, &GridCoords, &Transform), With<PlayerTag>>,
     mut query: Query<(Entity, &GridCoords, &Transform, &Aim, &mut Chase)>,
     grid: Res<Grid<Tile>>,
+    rapier_context: Res<RapierContext>,
+    mut gizmos: Gizmos,
 ) {
     for (entity, entity_coords, entity_transform, aim, mut chase) in &mut query {
-        let Ok((target_coords, target_transform, target_collider)) = player.get(chase.target)
-        else {
+        let Ok((player, target_coords, target_transform)) = player.get(chase.target) else {
             continue;
         };
 
@@ -45,14 +47,21 @@ pub fn chase_update(
         let entity_translate = entity_transform.translation.xy();
         let target_translate = target_transform.translation.xy();
 
-        if is_player_visible(
+        // gizmos.line_2d(entity_translate, target_translate, Color::srgb(1., 0., 0.));
+
+        let result = is_player_visible(
+            player,
+            entity,
             target_translate,
             entity_translate,
             *aim,
-            INVESTIGATOR_VIEW_RANGE,
+            INVESTIGATOR_VIEW_RANGE * 1.3,
             INVESTIGATOR_VIEW_HALF_ANGLE,
-            target_collider,
-        ) {
+            &rapier_context,
+            &mut gizmos,
+        );
+
+        if result {
             // Store last known position
             chase.player_last_seen = target_coords.clone();
 

@@ -9,7 +9,7 @@ pub const PIXEL_PER_TILE: f32 = 16.;
 /// AI
 
 pub const INVESTIGATOR_VIEW_RANGE: f32 = 5. * PIXEL_PER_TILE; // In world units
-pub const INVESTIGATOR_VIEW_HALF_ANGLE: f32 = 35.; // In degrees
+pub const INVESTIGATOR_VIEW_HALF_ANGLE: f32 = 90.; // In degrees
 
 pub const VILLAGERS_VIEW_RANGE: f32 = 3. * PIXEL_PER_TILE; // In world units
 pub const VILLAGERS_VIEW_HALF_ANGLE: f32 = 50.; // In degrees
@@ -33,7 +33,7 @@ pub const FIND_NEARBY_MAX_TRIES: u32 = 10;
 
 // AI & PLAYER
 
-pub const PLAYER_SPEED: f32 = 5. * PIXEL_PER_TILE; // In world unites per seconds
+pub const PLAYER_SPEED: f32 = 10. * PIXEL_PER_TILE; // In world unites per seconds
 
 pub const INTERACTION_DISTANCE: f32 = 1.1 * PIXEL_PER_TILE; // In world units
 
