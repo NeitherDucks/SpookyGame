@@ -1,8 +1,8 @@
 use bevy::{prelude::*, render::view::RenderLayers};
 use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkIntCell, LdtkSpriteSheetBundle};
+use bevy_rapier2d::prelude::*;
 
 use crate::{
-    collisions::{ColliderOffset, ColliderShape},
     config::{INVESTIGATOR_ANIMATION_IDLE, PLAYER_ANIMATION_IDLE, VILLAGER_ANIMATION_IDLE},
     grid::Tile,
     player::PlayerTag,
@@ -31,10 +31,38 @@ pub struct InteractibleTriggered {
     pub location: GridCoords,
 }
 
+#[derive(Clone, Bundle, LdtkIntCell)]
+pub struct ColliderBundle {
+    pub collider: Collider,
+    pub rigid_body: RigidBody,
+    pub velocity: Velocity,
+    pub rotation_constraints: LockedAxes,
+    pub gravity_scale: GravityScale,
+    pub friction: Friction,
+    pub density: ColliderMassProperties,
+}
+
+impl Default for ColliderBundle {
+    fn default() -> Self {
+        ColliderBundle {
+            collider: Collider::cuboid(8., 8.),
+            rigid_body: RigidBody::Dynamic,
+            friction: Friction {
+                coefficient: 0.0,
+                combine_rule: CoefficientCombineRule::Min,
+            },
+            rotation_constraints: LockedAxes::ROTATION_LOCKED,
+            density: ColliderMassProperties::default(),
+            gravity_scale: GravityScale::default(),
+            velocity: Velocity::default(),
+        }
+    }
+}
+
 #[derive(Bundle, LdtkEntity)]
 pub struct PlayerBundle {
-    collider: ColliderShape,
-    collider_offset: ColliderOffset,
+    collider: ColliderBundle,
+    controller: KinematicCharacterController,
     animation: AnimationConfig,
     animation_timer: AnimationTimer,
     tag: PlayerTag,
@@ -49,8 +77,8 @@ pub struct PlayerBundle {
 impl Default for PlayerBundle {
     fn default() -> Self {
         PlayerBundle {
-            collider: ColliderShape::Rectangle(Rectangle::new(16., 16.)),
-            collider_offset: ColliderOffset::ZERO,
+            collider: ColliderBundle::default(),
+            controller: KinematicCharacterController::default(),
             animation: PLAYER_ANIMATION_IDLE,
             animation_timer: AnimationTimer::new(PLAYER_ANIMATION_IDLE),
             tag: PlayerTag,
@@ -64,8 +92,7 @@ impl Default for PlayerBundle {
 
 #[derive(Bundle, LdtkEntity)]
 pub struct InvestigatorBundle {
-    collider: ColliderShape,
-    collider_offset: ColliderOffset,
+    collider: ColliderBundle,
     animation: AnimationConfig,
     animation_timer: AnimationTimer,
     tag: EnemyTag,
@@ -81,8 +108,7 @@ pub struct InvestigatorBundle {
 impl Default for InvestigatorBundle {
     fn default() -> Self {
         InvestigatorBundle {
-            collider: ColliderShape::Rectangle(Rectangle::new(16., 16.)),
-            collider_offset: ColliderOffset::ZERO,
+            collider: ColliderBundle::default(),
             animation: INVESTIGATOR_ANIMATION_IDLE,
             animation_timer: AnimationTimer::new(INVESTIGATOR_ANIMATION_IDLE),
             tag: EnemyTag::Investigator,
@@ -97,8 +123,7 @@ impl Default for InvestigatorBundle {
 
 #[derive(Bundle, LdtkEntity)]
 pub struct VillagerBundle {
-    collider: ColliderShape,
-    collider_offset: ColliderOffset,
+    collider: ColliderBundle,
     animation: AnimationConfig,
     animation_timer: AnimationTimer,
     tag: EnemyTag,
@@ -114,8 +139,7 @@ pub struct VillagerBundle {
 impl Default for VillagerBundle {
     fn default() -> Self {
         VillagerBundle {
-            collider: ColliderShape::Rectangle(Rectangle::new(16., 16.)),
-            collider_offset: ColliderOffset::ZERO,
+            collider: ColliderBundle::default(),
             animation: VILLAGER_ANIMATION_IDLE,
             animation_timer: AnimationTimer::new(VILLAGER_ANIMATION_IDLE),
             tag: EnemyTag::Villager,
@@ -163,16 +187,17 @@ impl Default for InteractibleBundle {
 #[derive(Bundle, LdtkIntCell)]
 pub struct CollisionTileBundle {
     tile: Tile,
-    collider: ColliderShape,
-    collider_offset: ColliderOffset,
+    collider: ColliderBundle,
 }
 
 impl Default for CollisionTileBundle {
     fn default() -> Self {
         CollisionTileBundle {
             tile: Tile,
-            collider: ColliderShape::Rectangle(Rectangle::new(16., 16.)),
-            collider_offset: ColliderOffset(Vec2::splat(8.)),
+            collider: ColliderBundle {
+                rigid_body: RigidBody::Fixed,
+                ..Default::default()
+            },
         }
     }
 }

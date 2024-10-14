@@ -1,7 +1,8 @@
-use bevy::{math::bounding::Bounded2d, prelude::*};
+use bevy::prelude::*;
+use bevy_rapier2d::prelude::KinematicCharacterController;
 
 use crate::{
-    collisions::{test_collision, test_ray, Collider, ColliderOffset, ColliderShape},
+    collisions::{test_ray, Collider},
     config::PLAYER_SPEED,
     ldtk::entities::Aim,
     rendering::InGameCamera,
@@ -62,12 +63,11 @@ fn cleanup(
 }
 
 fn move_player(
-    mut player: Query<(&mut Transform, &ColliderShape, &ColliderOffset), With<PlayerTag>>,
-    colliders: Query<&Collider, Without<PlayerTag>>,
+    mut player: Query<&mut KinematicCharacterController, With<PlayerTag>>,
     time: Res<Time>,
     input: Res<ButtonInput<KeyCode>>,
 ) {
-    let Ok((mut player, shape, offset)) = player.get_single_mut() else {
+    let Ok(mut controller) = player.get_single_mut() else {
         return;
     };
 
@@ -91,29 +91,7 @@ fn move_player(
 
     let move_delta = direction.normalize_or_zero() * PLAYER_SPEED * time.delta_seconds();
 
-    if move_delta.length() > 0.0 {
-        let new_position = player.translation.xy() + move_delta + offset.0;
-
-        let mut collide: bool = false;
-
-        // Obviously very slow, need some space partitioning algo like Quadtree, or KD-tree to query only things near the player.
-        // But should be fine for this small game
-        for collider2 in colliders.iter() {
-            collide |= match shape {
-                ColliderShape::Circle(c) => test_collision(
-                    &Collider::Circle(c.bounding_circle(new_position, 0.)),
-                    collider2,
-                ),
-                &ColliderShape::Rectangle(r) => {
-                    test_collision(&Collider::Rectangle(r.aabb_2d(new_position, 0.)), collider2)
-                }
-            };
-        }
-
-        if !collide {
-            player.translation += move_delta.extend(0.);
-        }
-    }
+    controller.translation = Some(move_delta);
 }
 
 fn escape_pressed(
