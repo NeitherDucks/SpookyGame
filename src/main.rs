@@ -22,7 +22,7 @@ use bevy_rapier2d::plugin::{NoUserData, RapierConfiguration, RapierPhysicsPlugin
 use bevy_rapier2d::render::RapierDebugRenderPlugin;
 use config::PIXEL_PER_TILE;
 use game_mode::GamePlugin;
-use grid::{collision_gizmos, GridPlugin, Tile};
+use grid::{GridPlugin, Tile};
 use ldtk::MyLdtkPlugin;
 use pathfinding::pathfinding_gizmos;
 use pause_menu::PauseMenuPlugin;

@@ -8,12 +8,12 @@ use std::{
 };
 
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{utils::grid_coords_to_translation, GridCoords};
+use bevy_ecs_ldtk::GridCoords;
 use bevy_rand::prelude::{GlobalEntropy, WyRand};
 use rand_core::RngCore;
 
 use crate::{
-    config::{FIND_NEARBY_MAX_TRIES, GRID_SIZE, MAX_RUN_AWAY_ANGLE, TILE_SIZE},
+    config::{FIND_NEARBY_MAX_TRIES, GRID_SIZE, MAX_RUN_AWAY_ANGLE},
     utils::remap_rand_f32,
 };
 
@@ -240,25 +240,6 @@ fn add_to_grid<T: Component>(
                 PhantomData::default(),
             ));
             grid[location] = Some(entity);
-        }
-    }
-}
-
-pub fn collision_gizmos(mut gizmos: Gizmos, coords: Query<&GridCoords>, grid: Res<Grid<Tile>>) {
-    for grid_y in grid.entities {
-        for entity in grid_y {
-            if let Some(entity) = entity {
-                if let Ok(coord) = coords.get(entity) {
-                    let position = grid_coords_to_translation(*coord, TILE_SIZE);
-
-                    gizmos.rect_2d(
-                        position,
-                        0.,
-                        Vec2::new(TILE_SIZE.x as f32, TILE_SIZE.y as f32),
-                        Color::srgb(0., 0., 0.),
-                    );
-                }
-            }
         }
     }
 }

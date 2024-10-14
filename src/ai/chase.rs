@@ -31,7 +31,6 @@ pub fn chase_on_enter(mut commands: Commands, query: Query<Entity, Added<Chase>>
 /// While [`Chase`], update [`Path`] to reflect target new position
 pub fn chase_update(
     mut commands: Commands,
-    transforms: Query<&Transform, (Without<PlayerTag>, Without<Chase>)>,
     player: Query<(Entity, &GridCoords, &Transform), With<PlayerTag>>,
     mut query: Query<(Entity, &GridCoords, &Transform, &Aim, &mut Chase)>,
     grid: Res<Grid<Tile>>,

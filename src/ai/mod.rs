@@ -141,7 +141,6 @@ fn nothing_to_idle(
 /// In any [`Idle`], [`Investigate`] or [`Wander`], and the player is nearby and in the field of vision of an Enemy, either [`Chase`] or [`RunAway`].
 fn notice_player(
     mut commands: Commands,
-    transforms: Query<&Transform, (Without<PlayerTag>, Without<EnemyTag>)>,
     player: Query<(Entity, &GridCoords, &Transform), With<PlayerTag>>,
     query: Query<(
         Entity,
@@ -338,7 +337,7 @@ fn chasing_to_killing(
     query: Query<(Entity, &Transform), With<Chase>>,
     player: Query<(Entity, &Transform), With<PlayerTag>>,
 ) {
-    if let Ok((player, player_transform)) = player.get_single() {
+    if let Ok((_, player_transform)) = player.get_single() {
         for (entity, transform) in &query {
             if transform
                 .translation
