@@ -20,10 +20,11 @@ use talk_to_investigator::*;
 use wander::*;
 
 use crate::{
+    collisions::Collider,
     config::*,
     ldtk::entities::{Aim, EnemyTag, InteractibleTriggered},
     pathfinding::Path,
-    player::PlayerTag,
+    player::{is_player_visible, PlayerTag},
     states::PlayingState,
 };
 
@@ -140,7 +141,7 @@ fn nothing_to_idle(
 /// In any [`Idle`], [`Investigate`] or [`Wander`], and the player is nearby and in the field of vision of an Enemy, either [`Chase`] or [`RunAway`].
 fn notice_player(
     mut commands: Commands,
-    player: Query<(Entity, &GridCoords, &Transform), With<PlayerTag>>,
+    player: Query<(Entity, &GridCoords, &Transform, &Collider), With<PlayerTag>>,
     query: Query<(
         Entity,
         &Transform,
@@ -149,7 +150,7 @@ fn notice_player(
         AnyOf<(&Idle, &Investigate, &Wander)>,
     )>,
 ) {
-    if let Ok((player, player_coords, player_transform)) = player.get_single() {
+    if let Ok((player, player_coords, player_transform, player_collider)) = player.get_single() {
         for (entity, entity_transform, aim, tag, _) in &query {
             let distance_threshold = match tag {
                 EnemyTag::Investigator => INVESTIGATOR_VIEW_RANGE,
@@ -164,30 +165,33 @@ fn notice_player(
             let player_location = player_transform.translation.xy();
             let enemy_location = entity_transform.translation.xy();
 
-            // Check if player is withing range.
-            if enemy_location.distance(player_location) < distance_threshold {
-                // Check if player is roughly in front.
-                if aim.0.dot((enemy_location - player_location).normalize()) < angle_threshold.cos()
-                {
-                    // Removing inexisting component seems fine (nothing is screaming at me).
-                    commands.entity(entity).remove::<Idle>();
-                    commands.entity(entity).remove::<Investigate>();
-                    commands.entity(entity).remove::<Wander>();
+            // Check if player is visible.
+            if is_player_visible(
+                player_location,
+                enemy_location,
+                *aim,
+                distance_threshold,
+                angle_threshold,
+                player_collider,
+            ) {
+                // Removing inexisting component seems fine (nothing is screaming at me).
+                commands.entity(entity).remove::<Idle>();
+                commands.entity(entity).remove::<Investigate>();
+                commands.entity(entity).remove::<Wander>();
 
-                    match tag {
-                        // If Enemy is an Investigator, chase the player.
-                        EnemyTag::Investigator => {
-                            commands.entity(entity).insert(Chase {
-                                target: player,
-                                player_last_seen: *player_coords,
-                            });
-                        }
-                        // If enemy is a Villager, run away from player.
-                        EnemyTag::Villager => {
-                            commands.entity(entity).insert(RunAway {
-                                player_last_seen: *player_coords,
-                            });
-                        }
+                match tag {
+                    // If Enemy is an Investigator, chase the player.
+                    EnemyTag::Investigator => {
+                        commands.entity(entity).insert(Chase {
+                            target: player,
+                            player_last_seen: *player_coords,
+                        });
+                    }
+                    // If enemy is a Villager, run away from player.
+                    EnemyTag::Villager => {
+                        commands.entity(entity).insert(RunAway {
+                            player_last_seen: *player_coords,
+                        });
                     }
                 }
             }

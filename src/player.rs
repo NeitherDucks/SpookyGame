@@ -1,8 +1,9 @@
 use bevy::{math::bounding::Bounded2d, prelude::*};
 
 use crate::{
-    collisions::{test_collision, Collider, ColliderOffset, ColliderShape},
+    collisions::{test_collision, test_ray, Collider, ColliderOffset, ColliderShape},
     config::PLAYER_SPEED,
+    ldtk::entities::Aim,
     rendering::InGameCamera,
     states::{GameState, PlayingState},
 };
@@ -127,4 +128,37 @@ fn escape_pressed(
             next_state.set(PlayingState::Playing);
         }
     }
+}
+
+pub fn is_player_visible(
+    player_location: Vec2,
+    other_location: Vec2,
+    other_aim: Aim,
+    max_distance: f32,
+    max_angle: f32,
+    player_collider: &Collider,
+) -> bool {
+    // Check if player is withing range.
+    if other_location.distance(player_location) < max_distance {
+        let dir = (other_location - player_location).normalize();
+
+        // Check if player is roughly in front.
+        if other_aim.0.dot(dir) < max_angle.cos() {
+            // Check of player is not behind wall.
+            if let Ok(dir) = Dir2::new(dir) {
+                let ray = Ray2d {
+                    origin: other_location,
+                    direction: dir,
+                };
+
+                return !test_ray(
+                    ray,
+                    other_location.distance(player_location) * 1.1,
+                    player_collider,
+                );
+            }
+        }
+    }
+
+    false
 }

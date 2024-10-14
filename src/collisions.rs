@@ -1,5 +1,5 @@
 use bevy::{
-    math::bounding::{Aabb2d, Bounded2d, BoundingCircle, IntersectsVolume},
+    math::bounding::{Aabb2d, Bounded2d, BoundingCircle, IntersectsVolume, RayCast2d},
     prelude::*,
 };
 
@@ -35,6 +35,17 @@ pub fn test_collision(collider1: &Collider, collider2: &Collider) -> bool {
             Collider::Rectangle(r2) => r.intersects(r2),
         },
     }
+}
+
+pub fn test_ray(ray: Ray2d, max_dist: f32, collider: &Collider) -> bool {
+    let ray_cast = RayCast2d::from_ray(ray, max_dist);
+
+    let dist = match collider {
+        Collider::Circle(c) => ray_cast.circle_intersection_at(c),
+        Collider::Rectangle(r) => ray_cast.aabb_intersection_at(r),
+    };
+
+    dist.is_some()
 }
 
 pub struct CollisionsPlugin;
