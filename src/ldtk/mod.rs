@@ -68,27 +68,11 @@ fn update_grid_coords(
     }
 }
 
-// fn update_transform(
-//     mut commands: Commands,
-//     query: Query<(Entity, Ref<GridCoords>, Ref<Transform>)>,
-// ) {
-//     for (entity, coords, transform) in &query {
-//         if coords.is_changed() && !transform.is_changed() {
-//             let new_translate = grid_coords_to_translation(*coords, IVec2::splat(GRID_SIZE as i32));
-
-//             commands
-//                 .entity(entity)
-//                 .insert(transform.with_translation(new_translate.extend(0.)));
-//         }
-//     }
-// }
-
 fn add_grid_location_to_wall(
     mut commands: Commands,
     query: Query<(Entity, &GridCoords), (With<Tile>, Without<GridLocation>)>,
 ) {
     for (entity, coords) in &query {
-        println!("Adding GridLocation to entity: {}", entity);
         commands.entity(entity).insert(GridLocation::from(*coords));
     }
 }

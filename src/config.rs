@@ -2,17 +2,21 @@ use bevy::math::IVec2;
 
 use crate::ldtk::animation::AnimationConfig;
 
+/// GLOBALS
+
+pub const PIXEL_PER_TILE: f32 = 16.;
+
 /// AI
 
-pub const INVESTIGATOR_VIEW_RANGE: f32 = 5. * 16.; // In world units
-pub const INVESTIGATOR_VIEW_HALF_ANGLE: f32 = 35.; // In degrees
+pub const INVESTIGATOR_VIEW_RANGE: f32 = 5. * PIXEL_PER_TILE; // In world units
+pub const INVESTIGATOR_VIEW_HALF_ANGLE: f32 = 90.; // In degrees
 
-pub const VILLAGERS_VIEW_RANGE: f32 = 3. * 16.; // In world units
+pub const VILLAGERS_VIEW_RANGE: f32 = 3. * PIXEL_PER_TILE; // In world units
 pub const VILLAGERS_VIEW_HALF_ANGLE: f32 = 50.; // In degrees
 
-pub const NORMAL_SPEED: f32 = 3. * 16.; // In world unites per seconds
-pub const RUNNING_SPEED: f32 = 5. * 16.; // In world unites per seconds
-pub const CHASE_SPEED: f32 = 6. * 16.; // In world unites per seconds
+pub const NORMAL_SPEED: f32 = 3. * PIXEL_PER_TILE; // In world unites per seconds
+pub const RUNNING_SPEED: f32 = 5. * PIXEL_PER_TILE; // In world unites per seconds
+pub const CHASE_SPEED: f32 = 6. * PIXEL_PER_TILE; // In world unites per seconds
 
 pub const INVESTIGATING_RADIUS: u32 = 10; // In seconds
 pub const INVESTIGATING_TIME: u64 = 10; // In seconds
@@ -29,14 +33,14 @@ pub const FIND_NEARBY_MAX_TRIES: u32 = 10;
 
 // AI & PLAYER
 
-pub const PLAYER_SPEED: f32 = 5. * 16.; // In world unites per seconds
+pub const PLAYER_SPEED: f32 = 10. * PIXEL_PER_TILE; // In world unites per seconds
 
-pub const INTERACTION_DISTANCE: f32 = 1.1 * 16.; // In world units
+pub const INTERACTION_DISTANCE: f32 = 1.1 * PIXEL_PER_TILE; // In world units
 
 // MAP
 
 pub const GRID_SIZE: IVec2 = IVec2::new(30, 30); // Defined in the ldtk file
-pub const TILE_SIZE: IVec2 = IVec2::new(16, 16); // Defined in the ldtk file
+pub const TILE_SIZE: IVec2 = IVec2::new(PIXEL_PER_TILE as i32, PIXEL_PER_TILE as i32); // Defined in the ldtk file
 
 // ANIMATIONS
 //// PLAYER

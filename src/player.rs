@@ -1,7 +1,10 @@
-use bevy::{math::bounding::Bounded2d, prelude::*};
+use bevy::prelude::*;
+use bevy_rapier2d::{
+    plugin::RapierContext,
+    prelude::{KinematicCharacterController, QueryFilter},
+};
 
 use crate::{
-    collisions::{test_collision, test_ray, Collider, ColliderOffset, ColliderShape},
     config::PLAYER_SPEED,
     ldtk::entities::Aim,
     rendering::InGameCamera,
@@ -62,12 +65,11 @@ fn cleanup(
 }
 
 fn move_player(
-    mut player: Query<(&mut Transform, &ColliderShape, &ColliderOffset), With<PlayerTag>>,
-    colliders: Query<&Collider, Without<PlayerTag>>,
+    mut player: Query<&mut KinematicCharacterController, With<PlayerTag>>,
     time: Res<Time>,
     input: Res<ButtonInput<KeyCode>>,
 ) {
-    let Ok((mut player, shape, offset)) = player.get_single_mut() else {
+    let Ok(mut controller) = player.get_single_mut() else {
         return;
     };
 
@@ -91,29 +93,7 @@ fn move_player(
 
     let move_delta = direction.normalize_or_zero() * PLAYER_SPEED * time.delta_seconds();
 
-    if move_delta.length() > 0.0 {
-        let new_position = player.translation.xy() + move_delta + offset.0;
-
-        let mut collide: bool = false;
-
-        // Obviously very slow, need some space partitioning algo like Quadtree, or KD-tree to query only things near the player.
-        // But should be fine for this small game
-        for collider2 in colliders.iter() {
-            collide |= match shape {
-                ColliderShape::Circle(c) => test_collision(
-                    &Collider::Circle(c.bounding_circle(new_position, 0.)),
-                    collider2,
-                ),
-                &ColliderShape::Rectangle(r) => {
-                    test_collision(&Collider::Rectangle(r.aabb_2d(new_position, 0.)), collider2)
-                }
-            };
-        }
-
-        if !collide {
-            player.translation += move_delta.extend(0.);
-        }
-    }
+    controller.translation = Some(move_delta);
 }
 
 fn escape_pressed(
@@ -131,31 +111,51 @@ fn escape_pressed(
 }
 
 pub fn is_player_visible(
+    player: Entity,
+    other: Entity,
     player_location: Vec2,
     other_location: Vec2,
     other_aim: Aim,
     max_distance: f32,
     max_angle: f32,
-    player_collider: &Collider,
+    rapier_context: &Res<RapierContext>,
+    gizmos: &mut Gizmos,
 ) -> bool {
-    // Check if player is withing range.
-    if other_location.distance(player_location) < max_distance {
-        let dir = (other_location - player_location).normalize();
+    let max_angle = max_angle.to_radians();
+    // Check if player is within range.
+    gizmos.arc_2d(
+        other_location,
+        other_aim.0.to_angle() - 90f32.to_radians(),
+        max_angle * 2.,
+        max_distance,
+        Color::srgb(1.0, 1.0, 1.0),
+    );
 
-        // Check if player is roughly in front.
-        if other_aim.0.dot(dir) < max_angle.cos() {
+    if other_location.distance(player_location) < max_distance {
+        let dir = (player_location - other_location).normalize();
+
+        // Check if player is within field of view.
+        if other_aim.0.angle_between(dir).abs() < max_angle {
             // Check of player is not behind wall.
-            if let Ok(dir) = Dir2::new(dir) {
-                let ray = Ray2d {
-                    origin: other_location,
-                    direction: dir,
+            let filter = QueryFilter::exclude_dynamic()
+                .exclude_sensors()
+                .exclude_rigid_body(other);
+
+            gizmos.line_2d(other_location, player_location, Color::srgb(1.0, 1.0, 0.0));
+
+            let result =
+                rapier_context.cast_ray(other_location, dir, max_distance + 8., true, filter);
+
+            if let Some((entity, rio)) = result {
+                let color = match entity == player {
+                    true => Color::srgb(1.0, 0.0, 1.0),
+                    false => Color::srgb(1.0, 1.0, 0.0),
                 };
 
-                return !test_ray(
-                    ray,
-                    other_location.distance(player_location) * 1.1,
-                    player_collider,
-                );
+                let hit_pos = other_location + (dir * rio);
+                gizmos.circle_2d(hit_pos, 5.0, color);
+
+                return entity == player;
             }
         }
     }
