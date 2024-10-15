@@ -121,11 +121,12 @@ pub fn is_player_visible(
     rapier_context: &Res<RapierContext>,
     gizmos: &mut Gizmos,
 ) -> bool {
-    // Check if player is withing range.
+    let max_angle = max_angle.to_radians();
+    // Check if player is within range.
     gizmos.arc_2d(
         other_location,
         other_aim.0.to_angle() - 90f32.to_radians(),
-        max_angle.to_radians(),
+        max_angle * 2.,
         max_distance,
         Color::srgb(1.0, 1.0, 1.0),
     );
@@ -133,13 +134,12 @@ pub fn is_player_visible(
     if other_location.distance(player_location) < max_distance {
         let dir = (player_location - other_location).normalize();
 
-        // Check if player is roughly in front.
-        if other_aim.0.dot(-dir) < max_angle.cos() {
+        // Check if player is within field of view.
+        if other_aim.0.angle_between(dir).abs() < max_angle {
             // Check of player is not behind wall.
             let filter = QueryFilter::exclude_dynamic()
                 .exclude_sensors()
                 .exclude_rigid_body(other);
-            // .exclude_rigid_body(player);
 
             gizmos.line_2d(other_location, player_location, Color::srgb(1.0, 1.0, 0.0));
 
