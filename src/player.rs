@@ -6,13 +6,10 @@ use bevy_rapier2d::{
 
 use crate::{
     config::PLAYER_SPEED,
-    ldtk::entities::Aim,
+    ldtk::entities::{enemies::Aim, player::PlayerTag},
     rendering::InGameCamera,
     states::{GameState, PlayingState},
 };
-
-#[derive(Component, Default)]
-pub struct PlayerTag;
 
 pub struct PlayerPlugin;
 

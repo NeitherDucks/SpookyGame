@@ -5,9 +5,9 @@ use bevy_ecs_ldtk::GridCoords;
 use bevy_rapier2d::plugin::RapierContext;
 
 use crate::{
-    ldtk::entities::{Aim, EnemyTag, InteractibleTriggered},
+    ldtk::entities::{interactible::InteractibleTriggered, player::PlayerTag, Aim, EnemyTag},
     pathfinding::Path,
-    player::{is_player_visible, PlayerTag},
+    player::is_player_visible,
 };
 
 use super::{Chase, Idle, Investigate, RunAway, TalkToInvestigator, Wander};

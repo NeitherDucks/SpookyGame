@@ -4,8 +4,8 @@ use bevy_ecs_ldtk::GridCoords;
 use crate::{
     config::CHASE_SPEED,
     grid::{Grid, Tile},
+    ldtk::entities::player::PlayerTag,
     pathfinding::Path,
-    player::PlayerTag,
 };
 
 use super::MovementSpeed;

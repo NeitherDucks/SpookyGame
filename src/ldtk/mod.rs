@@ -10,11 +10,11 @@ use bevy_ecs_ldtk::{
     utils::translation_to_grid_coords,
     GridCoords, LdtkPlugin, LdtkWorldBundle, LevelSelection,
 };
-use entities::*;
 
 use crate::{
     config::TILE_SIZE,
     grid::{GridLocation, Tile},
+    ldtk::entities::*,
     states::{GameState, PlayingState},
 };
 

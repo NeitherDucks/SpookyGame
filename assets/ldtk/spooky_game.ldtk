@@ -11,7 +11,7 @@
 	"iid": "3fbccba0-73f0-11ef-8459-8d6b718bce1c",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 18,
+	"nextUid": 20,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "LinearHorizontal",
@@ -321,6 +321,79 @@
 			"pivotX": 0.5,
 			"pivotY": 0.5,
 			"fieldDefs": []
+		},
+		{
+			"identifier": "HiddingSpotInteraction",
+			"uid": 18,
+			"tags": [],
+			"exportToToc": false,
+			"allowOutOfBounds": false,
+			"doc": null,
+			"width": 16,
+			"height": 16,
+			"resizableX": false,
+			"resizableY": false,
+			"minWidth": null,
+			"maxWidth": null,
+			"minHeight": null,
+			"maxHeight": null,
+			"keepAspectRatio": false,
+			"tileOpacity": 1,
+			"fillOpacity": 1,
+			"lineOpacity": 1,
+			"hollow": false,
+			"color": "#BE4A2F",
+			"renderMode": "Rectangle",
+			"showName": true,
+			"tilesetId": null,
+			"tileRenderMode": "FitInside",
+			"tileRect": null,
+			"uiTileRect": null,
+			"nineSliceBorders": [],
+			"maxCount": 0,
+			"limitScope": "PerLevel",
+			"limitBehavior": "MoveLastOne",
+			"pivotX": 0,
+			"pivotY": 0,
+			"fieldDefs": [
+				{
+					"identifier": "HiddingSpotEntity",
+					"doc": null,
+					"__type": "EntityRef",
+					"uid": 19,
+					"type": "F_EntityRef",
+					"isArray": false,
+					"canBeNull": false,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "RefLinkBetweenCenters",
+					"editorDisplayScale": 1,
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "CurvedArrow",
+					"editorDisplayColor": null,
+					"editorAlwaysShow": false,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"exportToToc": false,
+					"searchable": false,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
+					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": false,
+					"allowOutOfLevelRef": false,
+					"allowedRefs": "OnlySpecificEntity",
+					"allowedRefsEntityUid": 11,
+					"allowedRefTags": [],
+					"tilesetUid": null
+				}
+			]
 		}
 	], "tilesets": [
 		{
@@ -448,20 +521,6 @@
 					"entityInstances": [
 						{
 							"__identifier": "HiddingSpot",
-							"__grid": [4,18],
-							"__pivot": [0.5,0.5],
-							"__tags": [],
-							"__tile": { "tilesetUid": 3, "x": 0, "y": 0, "w": 16, "h": 16 },
-							"__smartColor": "#733E39",
-							"iid": "24f1ad50-73f0-11ef-95d2-75c23707a703",
-							"width": 16,
-							"height": 16,
-							"defUid": 11,
-							"px": [72,296],
-							"fieldInstances": []
-						},
-						{
-							"__identifier": "HiddingSpot",
 							"__grid": [11,26],
 							"__pivot": [0.5,0.5],
 							"__tags": [],
@@ -501,6 +560,240 @@
 							"defUid": 14,
 							"px": [56,424],
 							"fieldInstances": []
+						},
+						{
+							"__identifier": "HiddingSpotInteraction",
+							"__grid": [5,19],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#BE4A2F",
+							"iid": "fe9d5680-73f0-11ef-99fc-67730f88c035",
+							"width": 16,
+							"height": 16,
+							"defUid": 18,
+							"px": [80,304],
+							"fieldInstances": [{ "__identifier": "HiddingSpotEntity", "__type": "EntityRef", "__value": {
+								"entityIid": "ff979500-73f0-11ef-99fc-ebd1080e7aa6",
+								"layerIid": "f11f6170-73f0-11ef-95d2-5b179607a8fa",
+								"levelIid": "3fbd19c0-73f0-11ef-8459-bb2f0bbcdf1a",
+								"worldIid": "3fbcf2b0-73f0-11ef-8459-09b819815d14"
+							}, "__tile": null, "defUid": 19, "realEditorValues": [{
+								"id": "V_String",
+								"params": ["ff979500-73f0-11ef-99fc-ebd1080e7aa6"]
+							}] }]
+						},
+						{
+							"__identifier": "HiddingSpot",
+							"__grid": [4,18],
+							"__pivot": [0.5,0.5],
+							"__tags": [],
+							"__tile": { "tilesetUid": 3, "x": 0, "y": 0, "w": 16, "h": 16 },
+							"__smartColor": "#733E39",
+							"iid": "ff979500-73f0-11ef-99fc-ebd1080e7aa6",
+							"width": 16,
+							"height": 16,
+							"defUid": 11,
+							"px": [72,296],
+							"fieldInstances": []
+						},
+						{
+							"__identifier": "HiddingSpotInteraction",
+							"__grid": [4,19],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#BE4A2F",
+							"iid": "084f5520-73f0-11ef-99fc-93e645e33a62",
+							"width": 16,
+							"height": 16,
+							"defUid": 18,
+							"px": [64,304],
+							"fieldInstances": [{ "__identifier": "HiddingSpotEntity", "__type": "EntityRef", "__value": {
+								"entityIid": "ff979500-73f0-11ef-99fc-ebd1080e7aa6",
+								"layerIid": "f11f6170-73f0-11ef-95d2-5b179607a8fa",
+								"levelIid": "3fbd19c0-73f0-11ef-8459-bb2f0bbcdf1a",
+								"worldIid": "3fbcf2b0-73f0-11ef-8459-09b819815d14"
+							}, "__tile": null, "defUid": 19, "realEditorValues": [{
+								"id": "V_String",
+								"params": ["ff979500-73f0-11ef-99fc-ebd1080e7aa6"]
+							}] }]
+						},
+						{
+							"__identifier": "HiddingSpotInteraction",
+							"__grid": [5,18],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#BE4A2F",
+							"iid": "08c52160-73f0-11ef-99fc-75ca3f661d4d",
+							"width": 16,
+							"height": 16,
+							"defUid": 18,
+							"px": [80,288],
+							"fieldInstances": [{ "__identifier": "HiddingSpotEntity", "__type": "EntityRef", "__value": {
+								"entityIid": "ff979500-73f0-11ef-99fc-ebd1080e7aa6",
+								"layerIid": "f11f6170-73f0-11ef-95d2-5b179607a8fa",
+								"levelIid": "3fbd19c0-73f0-11ef-8459-bb2f0bbcdf1a",
+								"worldIid": "3fbcf2b0-73f0-11ef-8459-09b819815d14"
+							}, "__tile": null, "defUid": 19, "realEditorValues": [{
+								"id": "V_String",
+								"params": ["ff979500-73f0-11ef-99fc-ebd1080e7aa6"]
+							}] }]
+						},
+						{
+							"__identifier": "HiddingSpotInteraction",
+							"__grid": [10,27],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#BE4A2F",
+							"iid": "0f5ce7b0-73f0-11ef-99fc-49e9d693bb94",
+							"width": 16,
+							"height": 16,
+							"defUid": 18,
+							"px": [160,432],
+							"fieldInstances": [{ "__identifier": "HiddingSpotEntity", "__type": "EntityRef", "__value": {
+								"entityIid": "293b64f0-73f0-11ef-95d2-81c48f51b9d8",
+								"layerIid": "f11f6170-73f0-11ef-95d2-5b179607a8fa",
+								"levelIid": "3fbd19c0-73f0-11ef-8459-bb2f0bbcdf1a",
+								"worldIid": "3fbcf2b0-73f0-11ef-8459-09b819815d14"
+							}, "__tile": null, "defUid": 19, "realEditorValues": [{
+								"id": "V_String",
+								"params": ["293b64f0-73f0-11ef-95d2-81c48f51b9d8"]
+							}] }]
+						},
+						{
+							"__identifier": "HiddingSpotInteraction",
+							"__grid": [11,27],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#BE4A2F",
+							"iid": "0f9cafd0-73f0-11ef-99fc-c1eaa8ea851f",
+							"width": 16,
+							"height": 16,
+							"defUid": 18,
+							"px": [176,432],
+							"fieldInstances": [{ "__identifier": "HiddingSpotEntity", "__type": "EntityRef", "__value": {
+								"entityIid": "293b64f0-73f0-11ef-95d2-81c48f51b9d8",
+								"layerIid": "f11f6170-73f0-11ef-95d2-5b179607a8fa",
+								"levelIid": "3fbd19c0-73f0-11ef-8459-bb2f0bbcdf1a",
+								"worldIid": "3fbcf2b0-73f0-11ef-8459-09b819815d14"
+							}, "__tile": null, "defUid": 19, "realEditorValues": [{
+								"id": "V_String",
+								"params": ["293b64f0-73f0-11ef-95d2-81c48f51b9d8"]
+							}] }]
+						},
+						{
+							"__identifier": "HiddingSpotInteraction",
+							"__grid": [12,27],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#BE4A2F",
+							"iid": "0fcb39e0-73f0-11ef-99fc-5d98b6cbc213",
+							"width": 16,
+							"height": 16,
+							"defUid": 18,
+							"px": [192,432],
+							"fieldInstances": [{ "__identifier": "HiddingSpotEntity", "__type": "EntityRef", "__value": {
+								"entityIid": "293b64f0-73f0-11ef-95d2-81c48f51b9d8",
+								"layerIid": "f11f6170-73f0-11ef-95d2-5b179607a8fa",
+								"levelIid": "3fbd19c0-73f0-11ef-8459-bb2f0bbcdf1a",
+								"worldIid": "3fbcf2b0-73f0-11ef-8459-09b819815d14"
+							}, "__tile": null, "defUid": 19, "realEditorValues": [{
+								"id": "V_String",
+								"params": ["293b64f0-73f0-11ef-95d2-81c48f51b9d8"]
+							}] }]
+						},
+						{
+							"__identifier": "HiddingSpotInteraction",
+							"__grid": [11,25],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#BE4A2F",
+							"iid": "1008b810-73f0-11ef-99fc-f7044d82c96c",
+							"width": 16,
+							"height": 16,
+							"defUid": 18,
+							"px": [176,400],
+							"fieldInstances": [{ "__identifier": "HiddingSpotEntity", "__type": "EntityRef", "__value": {
+								"entityIid": "293b64f0-73f0-11ef-95d2-81c48f51b9d8",
+								"layerIid": "f11f6170-73f0-11ef-95d2-5b179607a8fa",
+								"levelIid": "3fbd19c0-73f0-11ef-8459-bb2f0bbcdf1a",
+								"worldIid": "3fbcf2b0-73f0-11ef-8459-09b819815d14"
+							}, "__tile": null, "defUid": 19, "realEditorValues": [{
+								"id": "V_String",
+								"params": ["293b64f0-73f0-11ef-95d2-81c48f51b9d8"]
+							}] }]
+						},
+						{
+							"__identifier": "HiddingSpotInteraction",
+							"__grid": [10,25],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#BE4A2F",
+							"iid": "104301f0-73f0-11ef-99fc-13bfb5e05ba5",
+							"width": 16,
+							"height": 16,
+							"defUid": 18,
+							"px": [160,400],
+							"fieldInstances": [{ "__identifier": "HiddingSpotEntity", "__type": "EntityRef", "__value": {
+								"entityIid": "293b64f0-73f0-11ef-95d2-81c48f51b9d8",
+								"layerIid": "f11f6170-73f0-11ef-95d2-5b179607a8fa",
+								"levelIid": "3fbd19c0-73f0-11ef-8459-bb2f0bbcdf1a",
+								"worldIid": "3fbcf2b0-73f0-11ef-8459-09b819815d14"
+							}, "__tile": null, "defUid": 19, "realEditorValues": [{
+								"id": "V_String",
+								"params": ["293b64f0-73f0-11ef-95d2-81c48f51b9d8"]
+							}] }]
+						},
+						{
+							"__identifier": "HiddingSpotInteraction",
+							"__grid": [3,19],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#BE4A2F",
+							"iid": "38d730f0-73f0-11ef-99fc-df75b51b6d41",
+							"width": 16,
+							"height": 16,
+							"defUid": 18,
+							"px": [48,304],
+							"fieldInstances": [{ "__identifier": "HiddingSpotEntity", "__type": "EntityRef", "__value": {
+								"entityIid": "ff979500-73f0-11ef-99fc-ebd1080e7aa6",
+								"layerIid": "f11f6170-73f0-11ef-95d2-5b179607a8fa",
+								"levelIid": "3fbd19c0-73f0-11ef-8459-bb2f0bbcdf1a",
+								"worldIid": "3fbcf2b0-73f0-11ef-8459-09b819815d14"
+							}, "__tile": null, "defUid": 19, "realEditorValues": [{
+								"id": "V_String",
+								"params": ["ff979500-73f0-11ef-99fc-ebd1080e7aa6"]
+							}] }]
+						},
+						{
+							"__identifier": "HiddingSpotInteraction",
+							"__grid": [5,17],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#BE4A2F",
+							"iid": "39d58e20-73f0-11ef-99fc-6b6a216961ae",
+							"width": 16,
+							"height": 16,
+							"defUid": 18,
+							"px": [80,272],
+							"fieldInstances": [{ "__identifier": "HiddingSpotEntity", "__type": "EntityRef", "__value": {
+								"entityIid": "ff979500-73f0-11ef-99fc-ebd1080e7aa6",
+								"layerIid": "f11f6170-73f0-11ef-95d2-5b179607a8fa",
+								"levelIid": "3fbd19c0-73f0-11ef-8459-bb2f0bbcdf1a",
+								"worldIid": "3fbcf2b0-73f0-11ef-8459-09b819815d14"
+							}, "__tile": null, "defUid": 19, "realEditorValues": [{
+								"id": "V_String",
+								"params": ["ff979500-73f0-11ef-99fc-ebd1080e7aa6"]
+							}] }]
 						}
 					]
 				},
