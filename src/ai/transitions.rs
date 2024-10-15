@@ -1,4 +1,4 @@
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy_ecs_ldtk::GridCoords;
@@ -134,8 +134,8 @@ pub fn talk_to_investigator_to_running_away(
                 commands.entity(talk.investigator).remove::<Wander>();
 
                 commands.entity(talk.investigator).insert(Investigate {
-                    start: Instant::now(),
                     target: talk.player_last_seen,
+                    ..Default::default()
                 });
 
                 commands.entity(entity).remove::<TalkToInvestigator>();
@@ -194,28 +194,12 @@ pub fn idle_or_wandering_to_investigating(
 
         commands.entity(entity).insert(Investigate {
             target: interactible.location,
-            start: Instant::now(),
+            ..Default::default()
         });
     }
 }
 
 /// If lost visual on player during [`Chase`], go [`Investigate`] last known location.
-// pub fn chasing_to_investigating(
-//     mut commands: Commands,
-//     query: Query<(Entity, &Chase), Without<Path>>,
-// ) {
-//     for (entity, chase) in &query {
-//         let last_kown_location = chase.player_last_seen.clone();
-
-//         commands.entity(entity).remove::<Chase>();
-
-//         commands.entity(entity).insert(Investigate {
-//             target: last_kown_location,
-//             start: Instant::now(),
-//         });
-//     }
-// }
-
 pub fn chasing_to_investigating(
     mut commands: Commands,
     player: Query<(Entity, &GridCoords, &Transform), With<PlayerTag>>,
@@ -250,7 +234,7 @@ pub fn chasing_to_investigating(
 
             commands.entity(entity).insert(Investigate {
                 target: *target_coords,
-                start: Instant::now(),
+                ..Default::default()
             });
         }
     }

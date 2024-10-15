@@ -17,6 +17,17 @@ use super::MovementSpeed;
 pub struct Investigate {
     pub target: GridCoords,
     pub start: Instant,
+    pub reached_area: bool,
+}
+
+impl Default for Investigate {
+    fn default() -> Self {
+        Investigate {
+            target: GridCoords::default(),
+            start: Instant::now(),
+            reached_area: false,
+        }
+    }
 }
 
 pub fn investigate_on_enter(mut commands: Commands, query: Query<Entity, Added<Investigate>>) {
@@ -28,15 +39,25 @@ pub fn investigate_on_enter(mut commands: Commands, query: Query<Entity, Added<I
 /// When entity doens't have a [`Path`], pick a location around the [`Investigate`].target, within [`Investigate`].range
 pub fn investigate_update(
     mut commands: Commands,
-    investigate: Query<(Entity, &GridCoords, &Investigate), Without<Path>>,
+    mut investigate: Query<(Entity, &GridCoords, &mut Investigate), Without<Path>>,
     grid: Res<Grid<Tile>>,
     mut rng: ResMut<GlobalEntropy<WyRand>>,
 ) {
-    for (entity, coords, investigate) in &investigate {
-        if let Ok(new_target) =
-            grid.find_nearby(&investigate.target, INVESTIGATING_RADIUS, rng.as_mut())
-        {
-            if let Ok(path) = grid.path_to(&coords, &new_target) {
+    for (entity, coords, mut investigate) in &mut investigate {
+        if *coords == investigate.target {
+            investigate.reached_area = true;
+        }
+
+        if investigate.reached_area {
+            if let Ok(new_target) =
+                grid.find_nearby(&investigate.target, INVESTIGATING_RADIUS, rng.as_mut())
+            {
+                if let Ok(path) = grid.path_to(&coords, &new_target) {
+                    commands.entity(entity).insert(path);
+                }
+            }
+        } else {
+            if let Ok(path) = grid.path_to(&coords, &investigate.target) {
                 commands.entity(entity).insert(path);
             }
         }
