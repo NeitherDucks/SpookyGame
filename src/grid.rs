@@ -30,14 +30,9 @@ pub struct GridPlugin<T> {
 impl<T: Component> Plugin for GridPlugin<T> {
     fn build(&self, app: &mut App) {
         app.init_resource::<Grid<T>>()
-            // .add_systems(Update, lock_to_grid::<T>)
-            .add_event::<DirtyGridEvent<T>>()
             .add_systems(PreUpdate, (add_to_grid::<T>, remove_from_grid::<T>));
     }
 }
-
-#[derive(Event)]
-pub struct DirtyGridEvent<T>(pub GridLocation, PhantomData<T>);
 
 #[derive(Resource)]
 pub struct Grid<T> {
@@ -202,18 +197,10 @@ impl<T> Grid<T> {
     }
 }
 
-fn remove_from_grid<T: Component>(
-    mut grid: ResMut<Grid<T>>,
-    mut query: RemovedComponents<T>,
-    mut dirty: EventWriter<DirtyGridEvent<T>>,
-) {
+fn remove_from_grid<T: Component>(mut grid: ResMut<Grid<T>>, mut query: RemovedComponents<T>) {
     for removed_entity in query.read() {
         let removed = grid.iter().find(|(entity, _)| *entity == removed_entity);
         if let Some((_, location)) = removed {
-            dirty.send(DirtyGridEvent::<T>(
-                location.clone(),
-                PhantomData::default(),
-            ));
             grid[&location] = None;
         }
     }
@@ -222,23 +209,14 @@ fn remove_from_grid<T: Component>(
 fn add_to_grid<T: Component>(
     mut grid: ResMut<Grid<T>>,
     query: Query<(Entity, &GridLocation), (Added<GridLocation>, With<T>)>,
-    mut dirty: EventWriter<DirtyGridEvent<T>>,
 ) {
     for (entity, location) in &query {
         if let Some(existing) = grid[location] {
             if existing != entity {
                 warn!("Over-writing entity in grid");
-                dirty.send(DirtyGridEvent::<T>(
-                    location.clone(),
-                    PhantomData::default(),
-                ));
                 grid[location] = Some(entity);
             }
         } else {
-            dirty.send(DirtyGridEvent::<T>(
-                location.clone(),
-                PhantomData::default(),
-            ));
             grid[location] = Some(entity);
         }
     }
