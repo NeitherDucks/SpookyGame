@@ -7,7 +7,7 @@ use bevy_rapier2d::plugin::RapierContext;
 use crate::{
     ldtk::entities::{noise_maker::NoiseMakerTriggered, player::PlayerTag, Aim, EnemyTag},
     pathfinding::Path,
-    player::{is_player_visible, PlayerIsHidding},
+    player_controller::{is_player_visible, PlayerIsHidding},
 };
 
 use super::{Chase, Chased, Idle, Investigate, RunAway, TalkToInvestigator, Wander};

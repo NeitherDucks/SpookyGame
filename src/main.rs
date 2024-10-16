@@ -2,10 +2,9 @@ mod ai;
 mod game_mode;
 mod grid;
 mod ldtk;
-mod main_menu;
+mod menus;
 mod pathfinding;
-mod pause_menu;
-mod player;
+mod player_controller;
 mod rendering;
 mod states;
 mod utils;
@@ -24,13 +23,12 @@ use config::PIXEL_PER_TILE;
 use game_mode::GamePlugin;
 use grid::{GridPlugin, Tile};
 use ldtk::MyLdtkPlugin;
+use menus::main_menu::MainMenuPlugin;
+use menus::pause_menu::PauseMenuPlugin;
 use pathfinding::pathfinding_gizmos;
-use pause_menu::PauseMenuPlugin;
-use player::PlayerPlugin;
+use player_controller::PlayerPlugin;
 use rendering::RenderingPlugin;
-
-use crate::main_menu::MainMenuPlugin;
-use crate::states::GameState;
+use states::GameState;
 
 fn main() {
     App::new()
