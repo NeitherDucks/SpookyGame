@@ -12,6 +12,7 @@ mod talk_to_investigator;
 mod transitions;
 mod wander;
 
+pub use chase::Chased;
 use chase::*;
 use idle::*;
 use investigate::*;
@@ -20,12 +21,7 @@ use talk_to_investigator::*;
 use transitions::*;
 use wander::*;
 
-use crate::{
-    config::*,
-    ldtk::entities::{Aim, EnemyTag},
-    pathfinding::Path,
-    states::PlayingState,
-};
+use crate::{config::*, ldtk::entities::Aim, pathfinding::Path, states::PlayingState};
 
 // All the logic for transitioning from different Tasks will be executed during this schedule.
 #[derive(ScheduleLabel, Debug, Clone, PartialEq, Eq, Hash)]
@@ -114,26 +110,6 @@ impl Plugin for AiPlugin {
             (check_empty_path, nothing_to_idle).run_if(in_state(PlayingState::Playing)),
         )
         .register_type::<Chase>();
-    }
-}
-
-/// Default [`Idle`] if no AI taks found for enemy entity.
-fn nothing_to_idle(
-    mut commands: Commands,
-    query: Query<
-        Entity,
-        (
-            With<EnemyTag>,
-            Without<Chase>,
-            Without<Idle>,
-            Without<Investigate>,
-            Without<RunAway>,
-            Without<Wander>,
-        ),
-    >,
-) {
-    for entity in &query {
-        commands.entity(entity).insert(Idle::default());
     }
 }
 

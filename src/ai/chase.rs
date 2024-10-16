@@ -18,6 +18,9 @@ pub struct Chase {
     pub player_last_seen: GridCoords,
 }
 
+#[derive(Component)]
+pub struct Chased;
+
 pub fn chase_on_enter(mut commands: Commands, query: Query<Entity, Added<Chase>>) {
     for entity in &query {
         commands.entity(entity).insert(MovementSpeed(CHASE_SPEED));

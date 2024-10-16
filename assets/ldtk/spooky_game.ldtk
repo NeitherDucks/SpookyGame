@@ -11,7 +11,7 @@
 	"iid": "3fbccba0-73f0-11ef-8459-8d6b718bce1c",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 20,
+	"nextUid": 21,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "LinearHorizontal",
@@ -320,7 +320,45 @@
 			"limitBehavior": "MoveLastOne",
 			"pivotX": 0.5,
 			"pivotY": 0.5,
-			"fieldDefs": []
+			"fieldDefs": [
+				{
+					"identifier": "entity",
+					"doc": null,
+					"__type": "EntityRef",
+					"uid": 20,
+					"type": "F_EntityRef",
+					"isArray": false,
+					"canBeNull": false,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "RefLinkBetweenCenters",
+					"editorDisplayScale": 1,
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "CurvedArrow",
+					"editorDisplayColor": null,
+					"editorAlwaysShow": false,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"exportToToc": false,
+					"searchable": false,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
+					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": false,
+					"allowOutOfLevelRef": false,
+					"allowedRefs": "OnlySpecificEntity",
+					"allowedRefsEntityUid": 18,
+					"allowedRefTags": [],
+					"tilesetUid": null
+				}
+			]
 		},
 		{
 			"identifier": "HiddingSpotInteraction",
@@ -357,7 +395,7 @@
 			"pivotY": 0,
 			"fieldDefs": [
 				{
-					"identifier": "HiddingSpotEntity",
+					"identifier": "entity",
 					"doc": null,
 					"__type": "EntityRef",
 					"uid": 19,
@@ -531,7 +569,15 @@
 							"height": 16,
 							"defUid": 11,
 							"px": [184,424],
-							"fieldInstances": []
+							"fieldInstances": [{ "__identifier": "entity", "__type": "EntityRef", "__value": {
+								"entityIid": "0f9cafd0-73f0-11ef-99fc-c1eaa8ea851f",
+								"layerIid": "f11f6170-73f0-11ef-95d2-5b179607a8fa",
+								"levelIid": "3fbd19c0-73f0-11ef-8459-bb2f0bbcdf1a",
+								"worldIid": "3fbcf2b0-73f0-11ef-8459-09b819815d14"
+							}, "__tile": null, "defUid": 20, "realEditorValues": [{
+								"id": "V_String",
+								"params": ["0f9cafd0-73f0-11ef-99fc-c1eaa8ea851f"]
+							}] }]
 						},
 						{
 							"__identifier": "Investigator",
@@ -573,7 +619,7 @@
 							"height": 16,
 							"defUid": 18,
 							"px": [80,304],
-							"fieldInstances": [{ "__identifier": "HiddingSpotEntity", "__type": "EntityRef", "__value": {
+							"fieldInstances": [{ "__identifier": "entity", "__type": "EntityRef", "__value": {
 								"entityIid": "ff979500-73f0-11ef-99fc-ebd1080e7aa6",
 								"layerIid": "f11f6170-73f0-11ef-95d2-5b179607a8fa",
 								"levelIid": "3fbd19c0-73f0-11ef-8459-bb2f0bbcdf1a",
@@ -595,7 +641,15 @@
 							"height": 16,
 							"defUid": 11,
 							"px": [72,296],
-							"fieldInstances": []
+							"fieldInstances": [{ "__identifier": "entity", "__type": "EntityRef", "__value": {
+								"entityIid": "084f5520-73f0-11ef-99fc-93e645e33a62",
+								"layerIid": "f11f6170-73f0-11ef-95d2-5b179607a8fa",
+								"levelIid": "3fbd19c0-73f0-11ef-8459-bb2f0bbcdf1a",
+								"worldIid": "3fbcf2b0-73f0-11ef-8459-09b819815d14"
+							}, "__tile": null, "defUid": 20, "realEditorValues": [{
+								"id": "V_String",
+								"params": ["084f5520-73f0-11ef-99fc-93e645e33a62"]
+							}] }]
 						},
 						{
 							"__identifier": "HiddingSpotInteraction",
@@ -609,7 +663,7 @@
 							"height": 16,
 							"defUid": 18,
 							"px": [64,304],
-							"fieldInstances": [{ "__identifier": "HiddingSpotEntity", "__type": "EntityRef", "__value": {
+							"fieldInstances": [{ "__identifier": "entity", "__type": "EntityRef", "__value": {
 								"entityIid": "ff979500-73f0-11ef-99fc-ebd1080e7aa6",
 								"layerIid": "f11f6170-73f0-11ef-95d2-5b179607a8fa",
 								"levelIid": "3fbd19c0-73f0-11ef-8459-bb2f0bbcdf1a",
@@ -631,7 +685,7 @@
 							"height": 16,
 							"defUid": 18,
 							"px": [80,288],
-							"fieldInstances": [{ "__identifier": "HiddingSpotEntity", "__type": "EntityRef", "__value": {
+							"fieldInstances": [{ "__identifier": "entity", "__type": "EntityRef", "__value": {
 								"entityIid": "ff979500-73f0-11ef-99fc-ebd1080e7aa6",
 								"layerIid": "f11f6170-73f0-11ef-95d2-5b179607a8fa",
 								"levelIid": "3fbd19c0-73f0-11ef-8459-bb2f0bbcdf1a",
@@ -653,7 +707,7 @@
 							"height": 16,
 							"defUid": 18,
 							"px": [160,432],
-							"fieldInstances": [{ "__identifier": "HiddingSpotEntity", "__type": "EntityRef", "__value": {
+							"fieldInstances": [{ "__identifier": "entity", "__type": "EntityRef", "__value": {
 								"entityIid": "293b64f0-73f0-11ef-95d2-81c48f51b9d8",
 								"layerIid": "f11f6170-73f0-11ef-95d2-5b179607a8fa",
 								"levelIid": "3fbd19c0-73f0-11ef-8459-bb2f0bbcdf1a",
@@ -675,7 +729,7 @@
 							"height": 16,
 							"defUid": 18,
 							"px": [176,432],
-							"fieldInstances": [{ "__identifier": "HiddingSpotEntity", "__type": "EntityRef", "__value": {
+							"fieldInstances": [{ "__identifier": "entity", "__type": "EntityRef", "__value": {
 								"entityIid": "293b64f0-73f0-11ef-95d2-81c48f51b9d8",
 								"layerIid": "f11f6170-73f0-11ef-95d2-5b179607a8fa",
 								"levelIid": "3fbd19c0-73f0-11ef-8459-bb2f0bbcdf1a",
@@ -697,7 +751,7 @@
 							"height": 16,
 							"defUid": 18,
 							"px": [192,432],
-							"fieldInstances": [{ "__identifier": "HiddingSpotEntity", "__type": "EntityRef", "__value": {
+							"fieldInstances": [{ "__identifier": "entity", "__type": "EntityRef", "__value": {
 								"entityIid": "293b64f0-73f0-11ef-95d2-81c48f51b9d8",
 								"layerIid": "f11f6170-73f0-11ef-95d2-5b179607a8fa",
 								"levelIid": "3fbd19c0-73f0-11ef-8459-bb2f0bbcdf1a",
@@ -719,7 +773,7 @@
 							"height": 16,
 							"defUid": 18,
 							"px": [176,400],
-							"fieldInstances": [{ "__identifier": "HiddingSpotEntity", "__type": "EntityRef", "__value": {
+							"fieldInstances": [{ "__identifier": "entity", "__type": "EntityRef", "__value": {
 								"entityIid": "293b64f0-73f0-11ef-95d2-81c48f51b9d8",
 								"layerIid": "f11f6170-73f0-11ef-95d2-5b179607a8fa",
 								"levelIid": "3fbd19c0-73f0-11ef-8459-bb2f0bbcdf1a",
@@ -741,7 +795,7 @@
 							"height": 16,
 							"defUid": 18,
 							"px": [160,400],
-							"fieldInstances": [{ "__identifier": "HiddingSpotEntity", "__type": "EntityRef", "__value": {
+							"fieldInstances": [{ "__identifier": "entity", "__type": "EntityRef", "__value": {
 								"entityIid": "293b64f0-73f0-11ef-95d2-81c48f51b9d8",
 								"layerIid": "f11f6170-73f0-11ef-95d2-5b179607a8fa",
 								"levelIid": "3fbd19c0-73f0-11ef-8459-bb2f0bbcdf1a",
@@ -763,7 +817,7 @@
 							"height": 16,
 							"defUid": 18,
 							"px": [48,304],
-							"fieldInstances": [{ "__identifier": "HiddingSpotEntity", "__type": "EntityRef", "__value": {
+							"fieldInstances": [{ "__identifier": "entity", "__type": "EntityRef", "__value": {
 								"entityIid": "ff979500-73f0-11ef-99fc-ebd1080e7aa6",
 								"layerIid": "f11f6170-73f0-11ef-95d2-5b179607a8fa",
 								"levelIid": "3fbd19c0-73f0-11ef-8459-bb2f0bbcdf1a",
@@ -785,7 +839,7 @@
 							"height": 16,
 							"defUid": 18,
 							"px": [80,272],
-							"fieldInstances": [{ "__identifier": "HiddingSpotEntity", "__type": "EntityRef", "__value": {
+							"fieldInstances": [{ "__identifier": "entity", "__type": "EntityRef", "__value": {
 								"entityIid": "ff979500-73f0-11ef-99fc-ebd1080e7aa6",
 								"layerIid": "f11f6170-73f0-11ef-95d2-5b179607a8fa",
 								"levelIid": "3fbd19c0-73f0-11ef-8459-bb2f0bbcdf1a",

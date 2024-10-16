@@ -5,19 +5,39 @@ use bevy_ecs_ldtk::GridCoords;
 use bevy_rapier2d::plugin::RapierContext;
 
 use crate::{
-    ldtk::entities::{interactible::InteractibleTriggered, player::PlayerTag, Aim, EnemyTag},
+    ldtk::entities::{noise_maker::NoiseMakerTriggered, player::PlayerTag, Aim, EnemyTag},
     pathfinding::Path,
-    player::is_player_visible,
+    player::{is_player_visible, PlayerIsHidding},
 };
 
-use super::{Chase, Idle, Investigate, RunAway, TalkToInvestigator, Wander};
+use super::{Chase, Chased, Idle, Investigate, RunAway, TalkToInvestigator, Wander};
 
 use crate::config::*;
+
+/// Default [`Idle`] if no AI taks found for enemy entity.
+pub fn nothing_to_idle(
+    mut commands: Commands,
+    query: Query<
+        Entity,
+        (
+            With<EnemyTag>,
+            Without<Chase>,
+            Without<Idle>,
+            Without<Investigate>,
+            Without<RunAway>,
+            Without<Wander>,
+        ),
+    >,
+) {
+    for entity in &query {
+        commands.entity(entity).insert(Idle::default());
+    }
+}
 
 /// In any [`Idle`], [`Investigate`] or [`Wander`], and the player is nearby and in the field of vision of an Enemy, either [`Chase`] or [`RunAway`].
 pub fn notice_player(
     mut commands: Commands,
-    player: Query<(Entity, &GridCoords, &Transform), With<PlayerTag>>,
+    player: Query<(Entity, &GridCoords, &Transform), (With<PlayerTag>, Without<PlayerIsHidding>)>,
     query: Query<(
         Entity,
         &Transform,
@@ -69,6 +89,7 @@ pub fn notice_player(
                             target: player,
                             player_last_seen: *player_coords,
                         });
+                        commands.entity(player).insert(Chased);
                     }
                     // If enemy is a Villager, run away from player.
                     EnemyTag::Villager => {
@@ -186,7 +207,7 @@ pub fn run_away_to_idle(
 /// If the player triggered an interactible nearby, go [`Investigate`].
 pub fn idle_or_wandering_to_investigating(
     mut commands: Commands,
-    query: Query<(Entity, &InteractibleTriggered), Or<(With<Idle>, With<Wander>)>>,
+    query: Query<(Entity, &NoiseMakerTriggered), Or<(With<Idle>, With<Wander>)>>,
 ) {
     for (entity, interactible) in &query {
         commands.entity(entity).remove::<Idle>();
@@ -202,13 +223,13 @@ pub fn idle_or_wandering_to_investigating(
 /// If lost visual on player during [`Chase`], go [`Investigate`] last known location.
 pub fn chasing_to_investigating(
     mut commands: Commands,
-    player: Query<(Entity, &GridCoords, &Transform), With<PlayerTag>>,
+    player: Query<(Entity, &GridCoords, &Transform, Option<&PlayerIsHidding>), With<PlayerTag>>,
     query: Query<(Entity, &Transform, &Aim), With<Chase>>,
     rapier_context: Res<RapierContext>,
     mut gizmos: Gizmos,
 ) {
     for (entity, entity_transform, aim) in &query {
-        let Ok((player, target_coords, target_transform)) = player.get_single() else {
+        let Ok((player, target_coords, target_transform, hidding)) = player.get_single() else {
             continue;
         };
 
@@ -216,21 +237,23 @@ pub fn chasing_to_investigating(
         let entity_translate = entity_transform.translation.xy();
         let target_translate = target_transform.translation.xy();
 
-        let result = is_player_visible(
-            player,
-            entity,
-            target_translate,
-            entity_translate,
-            *aim,
-            INVESTIGATOR_VIEW_RANGE * 1.3,
-            INVESTIGATOR_VIEW_HALF_ANGLE,
-            &rapier_context,
-            &mut gizmos,
-        );
+        let result = hidding.is_none()
+            && is_player_visible(
+                player,
+                entity,
+                target_translate,
+                entity_translate,
+                *aim,
+                INVESTIGATOR_VIEW_RANGE * 1.3,
+                INVESTIGATOR_VIEW_HALF_ANGLE,
+                &rapier_context,
+                &mut gizmos,
+            );
 
         // If still visible, update last seen coordinates, otherwise, swtich to Investigate.
         if !result {
             commands.entity(entity).remove::<Chase>();
+            commands.entity(player).remove::<Chased>();
 
             commands.entity(entity).insert(Investigate {
                 target: *target_coords,
