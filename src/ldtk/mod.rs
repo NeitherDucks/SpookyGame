@@ -13,7 +13,7 @@ use bevy_ecs_ldtk::{
 };
 use bevy_rapier2d::prelude::*;
 use entities::{InteractionPossible, NoiseMakerBundle};
-use hidding_spot::{HiddingSpotBundle, HiddingSpotInteractionBundle};
+use hidding_spot::HiddingSpotBundle;
 use player::PlayerTag;
 
 use crate::{
@@ -35,11 +35,13 @@ impl Plugin for MyLdtkPlugin {
             .register_ldtk_entity::<InvestigatorBundle>("Investigator")
             .register_ldtk_entity::<VillagerBundle>("Villager")
             .register_ldtk_entity::<HiddingSpotBundle>("HiddingSpot")
-            .register_ldtk_entity::<HiddingSpotInteractionBundle>("HiddingSpotInteraction")
-            .register_ldtk_entity::<NoiseMakerBundle>("Interactible")
+            .register_ldtk_entity::<NoiseMakerBundle>("NoiseMaker")
+            .register_ldtk_entity::<InteractibleBundle>("Interactible")
             .register_ldtk_int_cell::<CollisionTileBundle>(1)
             .register_type::<InteractionPossible>()
             .register_type::<InteractibleEntityRef>()
+            .register_type::<ActiveCollisionTypes>()
+            .register_type::<ActiveEvents>()
             .add_systems(OnEnter(PlayingState::Loading), setup)
             .add_systems(OnExit(GameState::Playing), cleanup)
             .add_systems(
@@ -50,6 +52,7 @@ impl Plugin for MyLdtkPlugin {
                     update_animations,
                     update_grid_coords,
                     interaction_events,
+                    noise_maker_trigger_removed,
                 )
                     .run_if(in_state(PlayingState::Playing)),
             )
@@ -101,7 +104,7 @@ pub fn interaction_events(
         (Entity, Option<&mut InteractionPossible>),
         (With<PlayerTag>, Without<Chased>),
     >,
-    interactibles: Query<(&InteractibleSpotTag, &InteractibleEntityRef)>,
+    interactibles: Query<(&InteractibleTag, &InteractibleEntityRef)>,
     spacebar_sprite_handle: Res<SpaceBarSpriteHandle>,
 ) {
     let Ok((player, mut current_interaction)) = player.get_single_mut() else {
@@ -109,7 +112,7 @@ pub fn interaction_events(
     };
 
     let mut events: i32 = 0;
-    let mut entity: Option<Entity> = None;
+    let mut entity: Option<(Entity, InteractibleTag)> = None;
 
     for collision_event in collision_events.read() {
         let (add, from, to) = match collision_event {
@@ -117,16 +120,20 @@ pub fn interaction_events(
             CollisionEvent::Stopped(entity_from, entity_to, _) => (false, *entity_from, *entity_to),
         };
 
-        if to != player {
+        if to != player && from != player {
             continue;
         }
 
-        let Ok((_, reference)) = interactibles.get(from) else {
+        let other = match to == player {
+            true => from,
+            false => to,
+        };
+
+        let Ok((tag, reference)) = interactibles.get(other) else {
             continue;
         };
 
-        //
-        if let Some(entity) = entity {
+        if let Some((entity, _)) = entity {
             if entity == reference.0 {
                 if add {
                     events += 1;
@@ -135,7 +142,7 @@ pub fn interaction_events(
                 }
             }
         } else {
-            entity = Some(reference.0);
+            entity = Some((reference.0, *tag));
             if add {
                 events += 1;
             } else {
@@ -144,7 +151,7 @@ pub fn interaction_events(
         }
     }
 
-    if let Some(entity) = entity {
+    if let Some((entity, tag)) = entity {
         if let Some(current_interaction) = current_interaction.as_deref_mut() {
             if current_interaction.entity == entity {
                 let counter = current_interaction.counter as i32 + events;
@@ -159,6 +166,7 @@ pub fn interaction_events(
             commands.entity(player).insert(InteractionPossible {
                 entity: entity,
                 counter: events as u32,
+                interactibe_type: tag,
             });
 
             let child = commands

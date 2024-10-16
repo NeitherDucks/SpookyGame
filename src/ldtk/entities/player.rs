@@ -18,6 +18,7 @@ pub struct PlayerTag;
 #[derive(Bundle, LdtkEntity)]
 pub struct PlayerBundle {
     collider: ColliderBundle,
+    active_collisions: ActiveCollisionTypes,
     controller: KinematicCharacterController,
     animation: AnimationConfig,
     animation_timer: AnimationTimer,
@@ -34,6 +35,7 @@ impl Default for PlayerBundle {
     fn default() -> Self {
         PlayerBundle {
             collider: ColliderBundle::default(),
+            active_collisions: ActiveCollisionTypes::STATIC_STATIC,
             controller: KinematicCharacterController::default(),
             animation: PLAYER_ANIMATION_IDLE,
             animation_timer: AnimationTimer::new(PLAYER_ANIMATION_IDLE),

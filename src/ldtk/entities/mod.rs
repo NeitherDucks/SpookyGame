@@ -1,5 +1,6 @@
 pub mod collision_tile;
 pub mod hidding_spot;
+pub mod interactible;
 pub mod investigator;
 pub mod noise_maker;
 pub mod player;
@@ -10,15 +11,20 @@ use bevy_rapier2d::prelude::*;
 
 pub use collision_tile::CollisionTileBundle;
 pub use hidding_spot::*;
+pub use interactible::*;
 pub use investigator::*;
 pub use noise_maker::*;
 pub use player::PlayerBundle;
 pub use villager::*;
 
-#[derive(Component)]
-pub enum InteractibleSpotTag {
-    HiddingSpot,
-    NoiseMaker,
+// IMPROVEME
+// Could have a list of possible Entity interactions and counters.
+// And a Key press to switch.
+#[derive(Component, Reflect)]
+pub struct InteractionPossible {
+    pub entity: Entity,
+    pub counter: u32,
+    pub interactibe_type: InteractibleTag,
 }
 
 #[derive(Component)]

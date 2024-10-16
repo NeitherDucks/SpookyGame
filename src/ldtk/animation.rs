@@ -7,6 +7,8 @@ pub struct AnimationConfig {
     first_sprite_index: usize,
     last_sprite_index: usize,
     fps: u8,
+    repeat: bool,
+    reset: bool,
 }
 
 impl AnimationConfig {
@@ -15,6 +17,22 @@ impl AnimationConfig {
             first_sprite_index: first,
             last_sprite_index: last,
             fps,
+            repeat: false,
+            reset: false,
+        }
+    }
+
+    pub const fn resets(&self) -> Self {
+        Self {
+            reset: true,
+            ..*self
+        }
+    }
+
+    pub const fn repeats(&self) -> Self {
+        Self {
+            repeat: true,
+            ..*self
         }
     }
 
@@ -32,8 +50,8 @@ impl AnimationTimer {
     }
 }
 
-// This system loops through all the sprites in the `TextureAtlas`, from  `first_sprite_index` to
-// `last_sprite_index` (both defined in `AnimationConfig`).
+/// This system loops through all the sprites in the [`TextureAtlas`], from  `first_sprite_index` to
+/// `last_sprite_index` (both defined in [`AnimationConfig`]).
 pub fn update_animations(
     time: Res<Time>,
     mut query: Query<(&AnimationConfig, &mut AnimationTimer, &mut TextureAtlas)>,
@@ -45,8 +63,15 @@ pub fn update_animations(
         // If it has been displayed for the user-defined amount of time (fps)...
         if timer.0.just_finished() {
             if atlas.index == config.last_sprite_index {
-                // ...and it IS the last frame, then we move back to the first frame and stop.
-                atlas.index = config.first_sprite_index;
+                // ...and it IS the last frame, and resets then we move back to the first frame.
+                if config.reset {
+                    atlas.index = config.first_sprite_index;
+                }
+
+                // if looping, reset the timer.
+                if config.repeat {
+                    timer.0 = AnimationConfig::timer_from_fps(config.fps);
+                }
             } else {
                 // ...and it is NOT the last frame, then we move to the next frame...
                 atlas.index += 1;

@@ -10,6 +10,7 @@ pub const PIXEL_PER_TILE: f32 = 16.;
 
 pub const INVESTIGATOR_VIEW_RANGE: f32 = 5. * PIXEL_PER_TILE; // In world units
 pub const INVESTIGATOR_VIEW_HALF_ANGLE: f32 = 90.; // In degrees
+pub const INVESTIGATOR_HEARING_RANGE: f32 = 8. * PIXEL_PER_TILE; // In world units
 
 pub const VILLAGERS_VIEW_RANGE: f32 = 3. * PIXEL_PER_TILE; // In world units
 pub const VILLAGERS_VIEW_HALF_ANGLE: f32 = 50.; // In degrees
@@ -51,3 +52,6 @@ pub const INVESTIGATOR_ANIMATION_IDLE: AnimationConfig = AnimationConfig::new(0,
 
 //// VILLAGER
 pub const VILLAGER_ANIMATION_IDLE: AnimationConfig = AnimationConfig::new(0, 0, 8);
+
+/// NOISE MAKER
+pub const NOISE_MAKER_ANIMATION: AnimationConfig = AnimationConfig::new(0, 4, 8);

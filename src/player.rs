@@ -3,17 +3,18 @@ use bevy_rapier2d::{plugin::RapierContext, prelude::*};
 
 use crate::{
     ai::Chased,
-    config::PLAYER_SPEED,
+    config::{INVESTIGATOR_HEARING_RANGE, NOISE_MAKER_ANIMATION, PLAYER_SPEED},
     ldtk::entities::{
-        hidding_spot::HiddingSpotTag, player::PlayerTag, Aim, InteractibleEntityRef,
-        InteractibleSpotTag, InteractionPossible,
+        hidding_spot::HiddingSpotExit, player::PlayerTag, Aim, AnimationTimer, EnemyTag,
+        InteractibleEntityRef, InteractibleTag, InteractionPossible, NoiseMakerInvestigateTarget,
+        NoiseMakerReTriggerable, NoiseMakerTriggerable, NoiseMakerTriggered,
     },
     rendering::InGameCamera,
     states::{GameState, PlayingState},
 };
 
 #[derive(Component)]
-pub struct PlayerIsHidding(pub Entity);
+pub struct PlayerIsHidding(pub Vec2);
 
 pub struct PlayerPlugin;
 
@@ -25,7 +26,7 @@ impl Plugin for PlayerPlugin {
                 (
                     setup_camera,
                     move_player,
-                    spacebar_pressed_hidding,
+                    spacebar_pressed,
                     player_is_chased,
                 )
                     .run_if(in_state(PlayingState::Playing)),
@@ -106,10 +107,10 @@ fn move_player(
     controller.translation = Some(move_delta);
 }
 
-fn spacebar_pressed_hidding(
+fn spacebar_pressed(
     mut commands: Commands,
     input: Res<ButtonInput<KeyCode>>,
-    mut query: Query<
+    mut player: Query<
         (
             Entity,
             &mut Transform,
@@ -118,41 +119,108 @@ fn spacebar_pressed_hidding(
         ),
         (With<PlayerTag>, Without<Chased>),
     >,
-    transforms: Query<
-        (&Transform, &InteractibleEntityRef),
+    investigators: Query<(Entity, &Transform, &EnemyTag), Without<PlayerTag>>,
+    hidding_spots: Query<
+        (&Transform, &InteractibleEntityRef, &HiddingSpotExit),
+        Without<PlayerTag>,
+    >,
+    noise_makers: Query<
         (
-            Or<(With<HiddingSpotTag>, With<InteractibleSpotTag>)>,
-            Without<PlayerTag>,
+            Entity,
+            &Transform,
+            &NoiseMakerInvestigateTarget,
+            Option<&NoiseMakerReTriggerable>,
         ),
+        (With<NoiseMakerTriggerable>, Without<PlayerTag>),
     >,
 ) {
-    if input.just_pressed(KeyCode::Space) {
-        if let Ok((entity, mut transform, interaction, hidding)) = query.get_single_mut() {
-            // If already hidding
-            if let Some(hidding) = hidding {
-                // Get exit position
-                if let Ok((exit_transform, _)) = transforms.get(hidding.0) {
-                    // Move player to exit
-                    // IMPROVEME: Tweening between positions
-                    *transform = *exit_transform;
-                    // Change collision to Fixed and remove PlayerIsHidding tag.
-                    commands
-                        .entity(entity)
-                        .insert(RigidBody::Fixed)
-                        .remove::<PlayerIsHidding>();
-                }
-            } else if let Some(interaction) = interaction {
-                // Get position of hiding spot
-                if let Ok((target_transform, reference)) = transforms.get(interaction.entity) {
-                    // Change player collision to KinematicPosition, so it stops colliding and add PlayerIsHidding tag.
-                    commands
-                        .entity(entity)
-                        .insert(RigidBody::KinematicPositionBased)
-                        .insert(PlayerIsHidding(reference.0));
+    // If the Space bar was just pressed
+    if !input.just_pressed(KeyCode::Space) {
+        return;
+    }
 
-                    // Move player to hidding spot
-                    // IMPROVEME: Tweening between positions
-                    *transform = *target_transform;
+    // and we can query the player
+    let Ok((player, mut player_transform, player_interaction, player_hidding)) =
+        player.get_single_mut()
+    else {
+        return;
+    };
+
+    // If already hidding
+    if let Some(hidding) = player_hidding {
+        // Get exit position
+        // Move player to exit
+        // IMPROVEME: Tweening between positions
+        *player_transform = Transform::from_translation(hidding.0.extend(0.));
+        // Change collision to Fixed and remove PlayerIsHidding tag.
+        commands
+            .entity(player)
+            .insert(RigidBody::Fixed)
+            .remove::<PlayerIsHidding>();
+    } else {
+        // If there is a possible interaction
+        let Some(interaction) = player_interaction else {
+            return;
+        };
+
+        match interaction.interactibe_type {
+            InteractibleTag::HiddingSpot => {
+                // If we can get the position of hiding spot from the interaction
+                let Ok((hidding_spot_transform, _, exit_location)) =
+                    hidding_spots.get(interaction.entity)
+                else {
+                    return;
+                };
+
+                // Change player collision to KinematicPosition, so it stops colliding and add PlayerIsHidding tag.
+                commands
+                    .entity(player)
+                    .insert(RigidBody::KinematicPositionBased)
+                    .insert(PlayerIsHidding(exit_location.0));
+
+                // Move player to hidding spot
+                // IMPROVEME: Tweening between positions
+                *player_transform = *hidding_spot_transform;
+            }
+            InteractibleTag::NoiseMaker => {
+                // If we can get the linked noise maker from the interaction.
+                let Ok((
+                    noise_maker,
+                    noise_maker_transform,
+                    noise_maker_investigate_coords,
+                    noise_maker_retrigger,
+                )) = noise_makers.get(interaction.entity)
+                else {
+                    return;
+                };
+
+                // Store the noise maker's location in 2d
+                let noise_maker_location = noise_maker_transform.translation.xy();
+
+                // Trigger animation on noise maker entity
+                commands.entity(interaction.entity).insert((
+                    NOISE_MAKER_ANIMATION,
+                    AnimationTimer::new(NOISE_MAKER_ANIMATION),
+                ));
+
+                // If the noise maker can't be re-triggered, remove the triggerable component.
+                if noise_maker_retrigger.is_none() {
+                    commands
+                        .entity(noise_maker)
+                        .remove::<NoiseMakerTriggerable>();
+                }
+
+                // Add NoiseTriggered to all Investigators in range
+                for (investigator, transform, tag) in &investigators {
+                    if *tag == EnemyTag::Investigator {
+                        if noise_maker_location.distance(transform.translation.xy())
+                            <= INVESTIGATOR_HEARING_RANGE
+                        {
+                            commands
+                                .entity(investigator)
+                                .insert(NoiseMakerTriggered(noise_maker_investigate_coords.0));
+                        }
+                    }
                 }
             }
         }

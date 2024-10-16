@@ -212,9 +212,10 @@ pub fn idle_or_wandering_to_investigating(
     for (entity, interactible) in &query {
         commands.entity(entity).remove::<Idle>();
         commands.entity(entity).remove::<Wander>();
+        commands.entity(entity).remove::<NoiseMakerTriggered>();
 
         commands.entity(entity).insert(Investigate {
-            target: interactible.location,
+            target: interactible.0,
             ..Default::default()
         });
     }

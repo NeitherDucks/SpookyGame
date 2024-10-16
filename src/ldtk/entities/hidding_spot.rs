@@ -1,61 +1,45 @@
 pub use bevy::{prelude::*, render::view::RenderLayers};
 pub use bevy_ecs_ldtk::prelude::*;
-use bevy_rapier2d::prelude::*;
+use bevy_ecs_ldtk::utils::ldtk_grid_coords_to_translation;
 
-use crate::ldtk::{ColliderBundle, UnresolvedEntityRef};
+use crate::ldtk::{UnresolvedEntityRef, GRID_SIZE};
 pub use crate::rendering::PIXEL_PERFECT_LAYERS;
 
-use super::InteractibleSpotTag;
+use super::TILE_SIZE;
 
-#[derive(Component)]
-pub struct HiddingSpotTag;
+#[derive(Default, Component)]
+pub struct HiddingSpotExit(pub Vec2);
 
 #[derive(Bundle, LdtkEntity)]
 pub struct HiddingSpotBundle {
     render_layer: RenderLayers,
-    tag: HiddingSpotTag,
     #[sprite_sheet_bundle]
     sprite_sheet_bundle: LdtkSpriteSheetBundle,
     #[with(UnresolvedEntityRef::from_ref_field)]
     unresolved_ref: UnresolvedEntityRef,
+    #[with(exit_from_field)]
+    exit: HiddingSpotExit,
 }
 
 impl Default for HiddingSpotBundle {
     fn default() -> Self {
         HiddingSpotBundle {
             render_layer: PIXEL_PERFECT_LAYERS,
-            tag: HiddingSpotTag,
             sprite_sheet_bundle: LdtkSpriteSheetBundle::default(),
             unresolved_ref: UnresolvedEntityRef::default(),
+            exit: HiddingSpotExit::default(),
         }
     }
 }
 
-#[derive(Bundle, LdtkEntity)]
-pub struct HiddingSpotInteractionBundle {
-    tag: InteractibleSpotTag,
-    collider: ColliderBundle,
-    sensor: Sensor,
-    active_events: ActiveEvents,
-    active_collisions: ActiveCollisionTypes,
-    #[with(UnresolvedEntityRef::from_ref_field)]
-    unresolved_ref: UnresolvedEntityRef,
-    render_layer: RenderLayers,
-}
+fn exit_from_field(entity_instance: &EntityInstance) -> HiddingSpotExit {
+    let point = entity_instance
+        .get_point_field("exit")
+        .expect("expected entity to have an exit tile field");
 
-impl Default for HiddingSpotInteractionBundle {
-    fn default() -> Self {
-        HiddingSpotInteractionBundle {
-            tag: InteractibleSpotTag::HiddingSpot,
-            collider: ColliderBundle {
-                collider: Collider::cuboid(7., 7.),
-                ..Default::default()
-            },
-            sensor: Sensor,
-            active_events: ActiveEvents::COLLISION_EVENTS,
-            active_collisions: ActiveCollisionTypes::STATIC_STATIC,
-            unresolved_ref: UnresolvedEntityRef::default(),
-            render_layer: PIXEL_PERFECT_LAYERS,
-        }
-    }
+    HiddingSpotExit(ldtk_grid_coords_to_translation(
+        *point,
+        GRID_SIZE.y,
+        TILE_SIZE,
+    ))
 }
