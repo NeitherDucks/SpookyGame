@@ -2,11 +2,26 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
+// Enum of all animations
+#[derive(Clone, Copy, Eq, PartialEq)]
+pub enum ANIMATIONS {
+    PlayerIdle,
+    PlayerDeath,
+    InvestigatorIdle,
+    VillagerIdle,
+    VillagerDeath,
+    NoiseMaker,
+}
+
+#[derive(Event)]
+pub struct AnimationFinishedEvent(pub ANIMATIONS);
+
 #[derive(Component)]
 pub struct DuringDeathAnimation;
 
 #[derive(Component, Clone, Copy)]
 pub struct AnimationConfig {
+    name: ANIMATIONS,
     first_sprite_index: usize,
     last_sprite_index: usize,
     fps: u8,
@@ -15,8 +30,9 @@ pub struct AnimationConfig {
 }
 
 impl AnimationConfig {
-    pub const fn new(first: usize, last: usize, fps: u8) -> Self {
+    pub const fn new(name: ANIMATIONS, first: usize, last: usize, fps: u8) -> Self {
         Self {
+            name,
             first_sprite_index: first,
             last_sprite_index: last,
             fps,
@@ -65,9 +81,10 @@ pub fn animation_changed(
 pub fn update_animations(
     time: Res<Time>,
     mut query: Query<(&AnimationConfig, &mut AnimationTimer, &mut TextureAtlas)>,
+    mut anim_finished_event: EventWriter<AnimationFinishedEvent>,
 ) {
     for (config, timer, atlas) in &mut query {
-        update_animation_internal(&time, config, timer, atlas);
+        update_animation_internal(&time, config, timer, atlas, &mut anim_finished_event);
     }
 }
 
@@ -78,9 +95,10 @@ pub fn update_animations_during_death(
         (&AnimationConfig, &mut AnimationTimer, &mut TextureAtlas),
         With<DuringDeathAnimation>,
     >,
+    mut anim_finished_event: EventWriter<AnimationFinishedEvent>,
 ) {
     for (config, timer, atlas) in &mut query {
-        update_animation_internal(&time, config, timer, atlas);
+        update_animation_internal(&time, config, timer, atlas, &mut anim_finished_event);
     }
 }
 
@@ -91,6 +109,7 @@ fn update_animation_internal(
     config: &AnimationConfig,
     mut timer: Mut<AnimationTimer>,
     mut atlas: Mut<TextureAtlas>,
+    event_writer: &mut EventWriter<AnimationFinishedEvent>,
 ) {
     // we track how long the current sprite has been displayed for
     timer.0.tick(time.delta());
@@ -98,12 +117,17 @@ fn update_animation_internal(
     // If it has been displayed for the user-defined amount of time (fps)...
     if timer.0.just_finished() {
         if atlas.index == config.last_sprite_index {
-            // ...and it IS the last frame, and resets then we move back to the first frame.
+            // ...and it IS the last frame
+
+            // emit animation finished event
+            event_writer.send(AnimationFinishedEvent(config.name));
+
+            // and resets then we move back to the first frame.
             if config.reset {
                 atlas.index = config.first_sprite_index;
             }
 
-            // if looping, go to first frame and reset the timer.
+            // and looping, go to first frame and reset the timer.
             if config.repeat {
                 atlas.index = config.first_sprite_index;
                 timer.0 = AnimationConfig::timer_from_fps(config.fps);

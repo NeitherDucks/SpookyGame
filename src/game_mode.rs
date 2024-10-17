@@ -5,11 +5,11 @@ use crate::{
     ai::Chased,
     config::{PLAYER_ANIMATION_DEATH, PLAYER_ANIMATION_IDLE},
     ldtk::{
-        animation::new_animation_during_death,
+        animation::{new_animation_during_death, AnimationFinishedEvent, ANIMATIONS},
         entities::{
             dead_player::{DeadPlayerBundle, DeadPlayerTag},
             player_respawn_point::PlayerRespawnPointTag,
-            AnimationTimer, PlayerTag,
+            PlayerTag,
         },
         DeadPlayerSpriteHandle,
     },
@@ -124,23 +124,20 @@ fn player_death(
 }
 
 fn player_died(
-    player: Query<&AnimationTimer, With<PlayerTag>>,
+    mut animation_finished: EventReader<AnimationFinishedEvent>,
     score: Res<Score>,
     mut next_state: ResMut<NextState<PlayingState>>,
 ) {
-    let Ok(animation_timer) = player.get_single() else {
-        next_state.set(PlayingState::Lose);
-        return;
-    };
-
-    // Check if the animation is finished
-    if animation_timer.0.just_finished() {
-        if score.player_lives == 0 {
-            // If no more lives, trigger lose condition.
-            next_state.set(PlayingState::Lose);
-        } else {
-            // Otherwise, respawn the player.
-            next_state.set(PlayingState::Respawning);
+    // Check if animation is finished
+    for event in animation_finished.read() {
+        if event.0 == ANIMATIONS::PlayerDeath {
+            if score.player_lives == 0 {
+                // If no more lives, trigger lose condition.
+                next_state.set(PlayingState::Lose);
+            } else {
+                // Otherwise, respawn the player.
+                next_state.set(PlayingState::Respawning);
+            }
         }
     }
 }

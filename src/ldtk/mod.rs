@@ -1,4 +1,6 @@
-use animation::{animation_changed, update_animations, update_animations_during_death};
+use animation::{
+    animation_changed, update_animations, update_animations_during_death, AnimationFinishedEvent,
+};
 use bevy::prelude::*;
 use iyes_progress::prelude::*;
 
@@ -53,6 +55,7 @@ impl Plugin for MyLdtkPlugin {
         .register_type::<ActiveCollisionTypes>()
         .register_type::<ActiveEvents>()
         .register_type::<EnemyTag>()
+        .add_event::<AnimationFinishedEvent>()
         .add_systems(OnEnter(PlayingState::Loading), setup)
         .add_systems(OnExit(GameState::Playing), cleanup)
         .add_systems(
