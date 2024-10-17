@@ -3,10 +3,21 @@ use bevy_dev_tools::states::log_transitions;
 
 use crate::states::{GameState, PlayingState};
 
-#[derive(Default, Resource)]
+#[derive(Resource)]
 pub struct Score {
     total_villagers: u8,
     villagers_killed: u8,
+    player_lives: u8,
+}
+
+impl Default for Score {
+    fn default() -> Self {
+        Self {
+            total_villagers: 0,
+            villagers_killed: 0,
+            player_lives: 1,
+        }
+    }
 }
 
 impl Score {
@@ -30,6 +41,10 @@ impl Plugin for GamePlugin {
             .add_systems(
                 Update,
                 intro_scene_update.run_if(in_state(PlayingState::IntroScene)),
+            )
+            .add_systems(
+                Update,
+                check_win_lose_condition.run_if(in_state(PlayingState::Playing)),
             )
             .add_systems(Update, log_transitions::<PlayingState>);
     }
@@ -58,3 +73,17 @@ pub fn intro_scene_setup(mut next_state: ResMut<NextState<PlayingState>>) {
 }
 
 pub fn intro_scene_update() {}
+
+pub fn check_win_lose_condition(
+    score: Res<Score>,
+    mut next_state: ResMut<NextState<PlayingState>>,
+) {
+    if score.villagers_killed == score.total_villagers {
+        next_state.set(PlayingState::Win);
+        return;
+    }
+
+    if score.player_lives == 0 {
+        next_state.set(PlayingState::Lose);
+    }
+}
