@@ -13,7 +13,7 @@ use bevy_rand::prelude::{GlobalEntropy, WyRand};
 use rand_core::RngCore;
 
 use crate::{
-    config::{FIND_NEARBY_MAX_TRIES, GRID_SIZE, MAX_RUN_AWAY_ANGLE},
+    config::{FIND_NEARBY_MAX_TRIES, GRID_SIZE, MAX_RUN_AWAY_ANGLE, TILE_SIZE},
     utils::remap_rand_f32,
 };
 
@@ -111,7 +111,12 @@ impl<T> Grid<T> {
                     -MAX_RUN_AWAY_ANGLE.to_radians(),
                     MAX_RUN_AWAY_ANGLE.to_radians(),
                 );
-            let dist = remap_rand_f32(rng.next_u32(), radius[0] as f32, radius[1] as f32);
+
+            let dist = remap_rand_f32(
+                rng.next_u32(),
+                (radius[0] * TILE_SIZE.x as u32) as f32,
+                (radius[1] * TILE_SIZE.y as u32) as f32,
+            );
 
             let new_world_pos =
                 away_from.to_world() + Vec2::new(angle.cos() * dist, angle.sin() * dist);

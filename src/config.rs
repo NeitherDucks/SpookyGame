@@ -24,8 +24,8 @@ pub const INVESTIGATING_TIME: u64 = 10; // In seconds
 
 pub const WANDERING_RADIUS: u32 = 32; // In grid units
 
-pub const MIN_RUN_AWAY_RADIUS: u32 = 32; // In grid units
-pub const MAX_RUN_AWAY_RADIUS: u32 = 64; // In grid units
+pub const MIN_RUN_AWAY_RADIUS: u32 = 8; // In grid units
+pub const MAX_RUN_AWAY_RADIUS: u32 = 16; // In grid units
 pub const MAX_RUN_AWAY_ANGLE: f32 = 45.; // In degrees
 
 pub const IDLING_TIME: u64 = 5; // In seconds
@@ -63,4 +63,4 @@ pub const VILLAGER_ANIMATION_DEATH: AnimationConfig =
 
 /// NOISE MAKER
 pub const NOISE_MAKER_ANIMATION: AnimationConfig =
-    AnimationConfig::new(ANIMATIONS::NoiseMaker, 0, 4, 8).repeats();
+    AnimationConfig::new(ANIMATIONS::NoiseMaker, 0, 4, 8);
