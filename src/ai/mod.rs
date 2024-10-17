@@ -5,6 +5,7 @@ use bevy::{app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*};
 use bevy_ecs_ldtk::utils::grid_coords_to_translation;
 
 mod chase;
+mod dead;
 mod idle;
 mod investigate;
 mod run_away;
@@ -14,6 +15,8 @@ mod wander;
 
 pub use chase::Chased;
 use chase::*;
+pub use dead::Dead;
+use dead::*;
 use idle::*;
 use investigate::*;
 use run_away::*;
@@ -92,6 +95,7 @@ impl Plugin for AiPlugin {
                 run_away_on_enter,
                 wander_on_enter,
                 talk_to_investigator_on_enter,
+                dead_on_enter,
             )
                 .run_if(in_state(PlayingState::Playing)),
         )

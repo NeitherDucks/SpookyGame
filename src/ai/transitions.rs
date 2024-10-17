@@ -10,7 +10,7 @@ use crate::{
     player_controller::{is_player_visible, PlayerIsHidding},
 };
 
-use super::{Chase, Chased, Idle, Investigate, RunAway, TalkToInvestigator, Wander};
+use super::{Chase, Chased, Dead, Idle, Investigate, RunAway, TalkToInvestigator, Wander};
 
 use crate::config::*;
 
@@ -26,6 +26,7 @@ pub fn nothing_to_idle(
             Without<Investigate>,
             Without<RunAway>,
             Without<Wander>,
+            Without<Dead>,
         ),
     >,
 ) {

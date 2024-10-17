@@ -2,12 +2,15 @@ use bevy::prelude::*;
 use bevy_rapier2d::{plugin::RapierContext, prelude::*};
 
 use crate::{
-    ai::Chased,
+    ai::{Chased, Dead},
     config::{INVESTIGATOR_HEARING_RANGE, NOISE_MAKER_ANIMATION, PLAYER_SPEED},
-    ldtk::entities::{
-        hidding_spot::HiddingSpotExit, player::PlayerTag, Aim, AnimationTimer, EnemyTag,
-        InteractibleEntityRef, InteractibleTag, InteractionPossible, NoiseMakerInvestigateTarget,
-        NoiseMakerReTriggerable, NoiseMakerTriggerable, NoiseMakerTriggered,
+    ldtk::{
+        animation::new_animation,
+        entities::{
+            hidding_spot::HiddingSpotExit, player::PlayerTag, Aim, EnemyTag, InteractibleEntityRef,
+            InteractibleTag, InteractionPossible, NoiseMakerInvestigateTarget,
+            NoiseMakerReTriggerable, NoiseMakerTriggerable, NoiseMakerTriggered,
+        },
     },
     rendering::InGameCamera,
     states::{GameState, PlayingState},
@@ -119,7 +122,7 @@ fn spacebar_pressed(
         ),
         (With<PlayerTag>, Without<Chased>),
     >,
-    investigators: Query<(Entity, &Transform, &EnemyTag), Without<PlayerTag>>,
+    enemies: Query<(Entity, &Transform, &EnemyTag), Without<PlayerTag>>,
     hidding_spots: Query<
         (&Transform, &InteractibleEntityRef, &HiddingSpotExit),
         Without<PlayerTag>,
@@ -198,10 +201,10 @@ fn spacebar_pressed(
                 let noise_maker_location = noise_maker_transform.translation.xy();
 
                 // Trigger animation on noise maker entity
-                commands.entity(interaction.entity).insert((
-                    NOISE_MAKER_ANIMATION,
-                    AnimationTimer::new(NOISE_MAKER_ANIMATION),
-                ));
+                // IMPROVEME: There is probably a better place for this
+                commands
+                    .entity(interaction.entity)
+                    .insert(new_animation(NOISE_MAKER_ANIMATION));
 
                 // If the noise maker can't be re-triggered, remove the triggerable component.
                 if noise_maker_retrigger.is_none() {
@@ -211,7 +214,7 @@ fn spacebar_pressed(
                 }
 
                 // Add NoiseTriggered to all Investigators in range
-                for (investigator, transform, tag) in &investigators {
+                for (investigator, transform, tag) in &enemies {
                     if *tag == EnemyTag::Investigator {
                         if noise_maker_location.distance(transform.translation.xy())
                             <= INVESTIGATOR_HEARING_RANGE
@@ -222,6 +225,15 @@ fn spacebar_pressed(
                         }
                     }
                 }
+            }
+            InteractibleTag::Villager => {
+                // Set dead state (this also handle animation and cleanup).
+                commands.entity(interaction.entity).insert(Dead);
+
+                // Add points to player?
+
+                // Play player kill animation
+                // TODO
             }
         }
     }

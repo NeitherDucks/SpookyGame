@@ -42,3 +42,39 @@ impl Default for VillagerBundle {
         }
     }
 }
+
+pub fn villager_added(mut commands: Commands, query: Query<(Entity, &EnemyTag), Added<EnemyTag>>) {
+    for (entity, tag) in &query {
+        if *tag != EnemyTag::Villager {
+            continue;
+        }
+
+        for x in -1..=1 {
+            for y in -1..=1 {
+                if x == 0 && y == 0 {
+                    continue;
+                }
+
+                let new_child =
+                    commands
+                        .spawn((
+                            TransformBundle::from_transform(Transform::from_translation(
+                                Vec3::new((x * TILE_SIZE.x) as f32, (y * TILE_SIZE.y) as f32, 0.),
+                            )),
+                            InteractibleTag::Villager,
+                            ColliderBundle {
+                                collider: Collider::cuboid(7., 7.),
+                                ..Default::default()
+                            },
+                            Sensor,
+                            ActiveEvents::COLLISION_EVENTS,
+                            ActiveCollisionTypes::STATIC_STATIC,
+                            InteractibleEntityRef(entity),
+                        ))
+                        .id();
+
+                commands.entity(entity).add_child(new_child);
+            }
+        }
+    }
+}

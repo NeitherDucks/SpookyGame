@@ -11,7 +11,7 @@
 	"iid": "3fbccba0-73f0-11ef-8459-8d6b718bce1c",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 34,
+	"nextUid": 36,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "LinearHorizontal",
@@ -641,7 +641,11 @@
 			"savedSelections": [],
 			"cachedPixelData": { "opaqueTiles": "00000", "averageColors": "2d7b2c7a2b6a2b692c8b" }
 		}
-	], "enums": [{ "identifier": "InteractionType", "uid": 28, "values": [ { "id": "HiddingSpot", "tileRect": null, "color": 12470831 }, { "id": "NoiseMaker", "tileRect": null, "color": 14120515 } ], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] }], "externalEnums": [], "levelFields": [] },
+	], "enums": [{ "identifier": "InteractionType", "uid": 28, "values": [
+		{ "id": "HiddingSpot", "tileRect": null, "color": 12470831 },
+		{ "id": "NoiseMaker", "tileRect": null, "color": 14120515 },
+		{ "id": "Villager", "tileRect": null, "color": 15389866 }
+	], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] }], "externalEnums": [], "levelFields": [] },
 	"levels": [
 		{
 			"identifier": "Level_0",
@@ -1305,6 +1309,20 @@
 							"height": 16,
 							"defUid": 13,
 							"px": [392,104],
+							"fieldInstances": []
+						},
+						{
+							"__identifier": "Villager",
+							"__grid": [10,4],
+							"__pivot": [0.5,0.5],
+							"__tags": [],
+							"__tile": { "tilesetUid": 2, "x": 0, "y": 0, "w": 16, "h": 16 },
+							"__smartColor": "#0099DB",
+							"iid": "c490f9c0-73f0-11ef-99fc-8ffce8f2f76a",
+							"width": 16,
+							"height": 16,
+							"defUid": 15,
+							"px": [168,72],
 							"fieldInstances": []
 						}
 					]

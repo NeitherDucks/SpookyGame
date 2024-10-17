@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-#[derive(Component)]
+#[derive(Component, Clone, Copy)]
 pub struct AnimationConfig {
     first_sprite_index: usize,
     last_sprite_index: usize,
@@ -80,4 +80,8 @@ pub fn update_animations(
             }
         }
     }
+}
+
+pub fn new_animation(animation: AnimationConfig) -> (AnimationConfig, AnimationTimer) {
+    (animation, AnimationTimer::new(animation))
 }

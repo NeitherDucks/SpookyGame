@@ -52,6 +52,7 @@ pub const INVESTIGATOR_ANIMATION_IDLE: AnimationConfig = AnimationConfig::new(0,
 
 //// VILLAGER
 pub const VILLAGER_ANIMATION_IDLE: AnimationConfig = AnimationConfig::new(0, 0, 8);
+pub const VILLAGER_ANIMATION_DEATH: AnimationConfig = AnimationConfig::new(0, 0, 8);
 
 /// NOISE MAKER
 pub const NOISE_MAKER_ANIMATION: AnimationConfig = AnimationConfig::new(0, 4, 8);

@@ -42,6 +42,7 @@ impl Plugin for MyLdtkPlugin {
             .register_type::<InteractibleEntityRef>()
             .register_type::<ActiveCollisionTypes>()
             .register_type::<ActiveEvents>()
+            .register_type::<EnemyTag>()
             .add_systems(OnEnter(PlayingState::Loading), setup)
             .add_systems(OnExit(GameState::Playing), cleanup)
             .add_systems(
@@ -53,6 +54,7 @@ impl Plugin for MyLdtkPlugin {
                     update_grid_coords,
                     interaction_events,
                     noise_maker_trigger_removed,
+                    villager_added,
                 )
                     .run_if(in_state(PlayingState::Playing)),
             )

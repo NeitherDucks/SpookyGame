@@ -8,6 +8,7 @@ use super::{ColliderBundle, UnresolvedEntityRef};
 pub enum InteractibleTag {
     HiddingSpot,
     NoiseMaker,
+    Villager,
 }
 
 impl InteractibleTag {
@@ -15,6 +16,7 @@ impl InteractibleTag {
         match s {
             "HiddingSpot" => InteractibleTag::HiddingSpot,
             "NoiseMaker" => InteractibleTag::NoiseMaker,
+            "Villager" => InteractibleTag::Villager,
             _ => InteractibleTag::NoiseMaker,
         }
     }

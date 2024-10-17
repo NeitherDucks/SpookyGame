@@ -30,7 +30,7 @@ pub struct InteractionPossible {
 #[derive(Component)]
 pub struct ShowInteractionButtonTag;
 
-#[derive(Component, PartialEq, Eq)]
+#[derive(Reflect, Component, PartialEq, Eq)]
 pub enum EnemyTag {
     Investigator,
     Villager,
