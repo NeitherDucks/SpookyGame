@@ -23,8 +23,10 @@ use config::PIXEL_PER_TILE;
 use game_mode::GamePlugin;
 use grid::{GridPlugin, Tile};
 use ldtk::MyLdtkPlugin;
+use menus::lose_menu::LoseMenuPlugin;
 use menus::main_menu::MainMenuPlugin;
 use menus::pause_menu::PauseMenuPlugin;
+use menus::win_menu::WinMenuPlugin;
 use pathfinding::pathfinding_gizmos;
 use player_controller::PlayerPlugin;
 use rendering::RenderingPlugin;
@@ -42,6 +44,8 @@ fn main() {
             GridPlugin::<Tile>::default(),
             MainMenuPlugin,
             PauseMenuPlugin,
+            LoseMenuPlugin,
+            WinMenuPlugin,
             GamePlugin,
             MyLdtkPlugin,
             PlayerPlugin,

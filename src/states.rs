@@ -7,6 +7,7 @@ pub enum GameState {
     #[default]
     MainMenu,
     Playing,
+    Reset,
 }
 
 // Different states of the playing the game.

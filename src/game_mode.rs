@@ -38,6 +38,7 @@ impl Plugin for GamePlugin {
             .add_systems(OnEnter(GameState::Playing), setup)
             .add_systems(OnEnter(PlayingState::Loading), load)
             .add_systems(OnEnter(PlayingState::IntroScene), intro_scene_setup)
+            .add_systems(OnEnter(GameState::Reset), reset)
             .add_systems(
                 Update,
                 intro_scene_update.run_if(in_state(PlayingState::IntroScene)),
@@ -57,14 +58,14 @@ fn setup(mut commands: Commands, mut next_state: ResMut<NextState<PlayingState>>
     next_state.set(PlayingState::Loading);
 }
 
-pub fn load(mut next_state: ResMut<NextState<PlayingState>>) {
+/// Most of the loading happens in [`ldtk::setup()`].
+/// But this can also be used if needed.
+/// Don't forget to add it to the [`AssetLoading`] resource.
+fn load() {
     // Wait for everything to load
-
-    // Trigger intro scene
-    next_state.set(PlayingState::IntroScene);
 }
 
-pub fn intro_scene_setup(mut next_state: ResMut<NextState<PlayingState>>) {
+fn intro_scene_setup(mut next_state: ResMut<NextState<PlayingState>>) {
     // Setup necessary stuff for the intro_scene
 
     // For now, skip to the next state
@@ -72,13 +73,12 @@ pub fn intro_scene_setup(mut next_state: ResMut<NextState<PlayingState>>) {
     next_state.set(PlayingState::Playing);
 }
 
-pub fn intro_scene_update() {}
+fn intro_scene_update() {}
 
-pub fn check_win_lose_condition(
-    score: Res<Score>,
-    mut next_state: ResMut<NextState<PlayingState>>,
-) {
-    if score.villagers_killed == score.total_villagers {
+fn check_win_lose_condition(score: Res<Score>, mut next_state: ResMut<NextState<PlayingState>>) {
+    // score.total_villagers != 0 is a cheap way of not triggering the win condition before everthing is setup
+    // IMPROVEME: Proper loading flow, so that everything is setup (especially LDtk stuff) before switching to PlayingState::Playing
+    if score.villagers_killed == score.total_villagers && score.total_villagers != 0 {
         next_state.set(PlayingState::Win);
         return;
     }
@@ -86,4 +86,10 @@ pub fn check_win_lose_condition(
     if score.player_lives == 0 {
         next_state.set(PlayingState::Lose);
     }
+}
+
+fn reset(mut score: ResMut<Score>, mut next_state: ResMut<NextState<GameState>>) {
+    *score = Score::default();
+
+    next_state.set(GameState::Playing);
 }

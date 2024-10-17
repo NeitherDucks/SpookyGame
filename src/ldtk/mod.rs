@@ -1,5 +1,6 @@
 use animation::update_animations;
 use bevy::prelude::*;
+use iyes_progress::prelude::*;
 
 pub mod animation;
 pub mod entities;
@@ -30,52 +31,68 @@ pub struct MyLdtkPlugin;
 
 impl Plugin for MyLdtkPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(LdtkPlugin)
-            .register_ldtk_entity::<PlayerBundle>("Player")
-            .register_ldtk_entity::<InvestigatorBundle>("Investigator")
-            .register_ldtk_entity::<VillagerBundle>("Villager")
-            .register_ldtk_entity::<HiddingSpotBundle>("HiddingSpot")
-            .register_ldtk_entity::<NoiseMakerBundle>("NoiseMaker")
-            .register_ldtk_entity::<InteractibleBundle>("Interactible")
-            .register_ldtk_int_cell::<CollisionTileBundle>(1)
-            .register_type::<InteractionPossible>()
-            .register_type::<InteractibleEntityRef>()
-            .register_type::<ActiveCollisionTypes>()
-            .register_type::<ActiveEvents>()
-            .register_type::<EnemyTag>()
-            .add_systems(OnEnter(PlayingState::Loading), setup)
-            .add_systems(OnExit(GameState::Playing), cleanup)
-            .add_systems(
-                Update,
-                (
-                    add_grid_location_to_wall,
-                    resolve_entity_references,
-                    update_animations,
-                    update_grid_coords,
-                    interaction_events,
-                    noise_maker_trigger_removed,
-                    villager_added,
-                )
-                    .run_if(in_state(PlayingState::Playing)),
+        app.add_plugins((
+            LdtkPlugin,
+            ProgressPlugin::new(PlayingState::Loading)
+                .continue_to(PlayingState::IntroScene)
+                .track_assets(),
+        ))
+        .register_ldtk_entity::<PlayerBundle>("Player")
+        .register_ldtk_entity::<InvestigatorBundle>("Investigator")
+        .register_ldtk_entity::<VillagerBundle>("Villager")
+        .register_ldtk_entity::<HiddingSpotBundle>("HiddingSpot")
+        .register_ldtk_entity::<NoiseMakerBundle>("NoiseMaker")
+        .register_ldtk_entity::<InteractibleBundle>("Interactible")
+        .register_ldtk_int_cell::<CollisionTileBundle>(1)
+        .register_type::<InteractionPossible>()
+        .register_type::<InteractibleEntityRef>()
+        .register_type::<ActiveCollisionTypes>()
+        .register_type::<ActiveEvents>()
+        .register_type::<EnemyTag>()
+        .add_systems(OnEnter(PlayingState::Loading), setup)
+        .add_systems(OnExit(GameState::Playing), cleanup)
+        .add_systems(
+            Update,
+            (
+                add_grid_location_to_wall,
+                resolve_entity_references,
+                update_animations,
+                update_grid_coords,
+                interaction_events,
+                noise_maker_trigger_removed,
+                villager_added,
             )
-            .insert_resource(LevelSelection::index(0));
+                .run_if(in_state(PlayingState::Playing)),
+        )
+        .insert_resource(LevelSelection::index(0));
     }
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut loading: ResMut<AssetsLoading>,
+) {
     let ldtk_file: Handle<LdtkProject> = asset_server.load("ldtk/spooky_game.ldtk");
 
     let spacebar_sprite: Handle<Image> = asset_server.load("2d/space_bar.png");
 
     commands.spawn(LdtkWorldBundle {
-        ldtk_handle: ldtk_file,
+        ldtk_handle: ldtk_file.clone(),
         ..default()
     });
 
-    commands.insert_resource(SpaceBarSpriteHandle(spacebar_sprite));
+    commands.insert_resource(SpaceBarSpriteHandle(spacebar_sprite.clone()));
+
+    loading.add(&ldtk_file);
+    loading.add(&spacebar_sprite);
 }
 
-fn cleanup() {}
+fn cleanup(mut commands: Commands, ldtk_world: Query<Entity, With<Handle<LdtkProject>>>) {
+    for entity in &ldtk_world {
+        commands.entity(entity).despawn_recursive();
+    }
+}
 
 fn update_grid_coords(
     mut commands: Commands,

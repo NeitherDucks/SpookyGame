@@ -27,6 +27,8 @@ fn setup(mut commands: Commands) {
                     height: Val::Percent(100.0),
                     align_items: AlignItems::Center,
                     justify_content: JustifyContent::Center,
+                    flex_direction: FlexDirection::Column,
+                    align_content: AlignContent::SpaceBetween,
                     ..default()
                 },
                 background_color: BackgroundColor(Color::linear_rgba(0.0, 0.0, 0.0, 0.75)),
@@ -43,13 +45,31 @@ fn setup(mut commands: Commands) {
                 },
             ));
 
-            parent.spawn(TextBundle::from_section(
-                "Play again",
-                TextStyle {
-                    font_size: 30.0,
+            parent
+                .spawn(ButtonBundle {
+                    style: Style {
+                        width: Val::Px(150.0),
+                        height: Val::Px(65.0),
+                        border: UiRect::all(Val::Px(2.)),
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        margin: UiRect::top(Val::Px(30.)),
+                        ..default()
+                    },
+                    border_color: BorderColor(Color::BLACK),
+                    border_radius: BorderRadius::MAX,
+                    background_color: BackgroundColor(Color::srgb(0.2, 0.2, 0.2)),
                     ..default()
-                },
-            ));
+                })
+                .with_children(|parent| {
+                    parent.spawn(TextBundle::from_section(
+                        "Play again",
+                        TextStyle {
+                            font_size: 20.0,
+                            ..default()
+                        },
+                    ));
+                });
         });
 }
 
@@ -73,7 +93,7 @@ pub fn button_system(
             Interaction::Pressed => {
                 *color = Color::srgb(0.5, 0.5, 0.5).into();
                 border_color.0 = Color::WHITE;
-                next_state.set(GameState::Playing);
+                next_state.set(GameState::Reset);
             }
             Interaction::Hovered => {
                 *color = Color::srgb(0.3, 0.3, 0.3).into();
