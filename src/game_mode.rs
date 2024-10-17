@@ -3,6 +3,22 @@ use bevy_dev_tools::states::log_transitions;
 
 use crate::states::{GameState, PlayingState};
 
+#[derive(Default, Resource)]
+pub struct Score {
+    total_villagers: u8,
+    villagers_killed: u8,
+}
+
+impl Score {
+    pub fn villager_spawned(&mut self) {
+        self.total_villagers += 1;
+    }
+
+    pub fn villager_killed(&mut self) {
+        self.villagers_killed += 1;
+    }
+}
+
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
@@ -19,8 +35,9 @@ impl Plugin for GamePlugin {
     }
 }
 
-fn setup(mut next_state: ResMut<NextState<PlayingState>>) {
+fn setup(mut commands: Commands, mut next_state: ResMut<NextState<PlayingState>>) {
     // Extra setup if needed
+    commands.init_resource::<Score>();
 
     next_state.set(PlayingState::Loading);
 }

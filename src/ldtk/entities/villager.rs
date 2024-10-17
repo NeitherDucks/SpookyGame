@@ -1,6 +1,7 @@
 pub use bevy::{prelude::*, render::view::RenderLayers};
 pub use bevy_ecs_ldtk::prelude::*;
 
+use crate::game_mode::Score;
 pub use crate::{
     config::*,
     ldtk::{
@@ -43,11 +44,17 @@ impl Default for VillagerBundle {
     }
 }
 
-pub fn villager_added(mut commands: Commands, query: Query<(Entity, &EnemyTag), Added<EnemyTag>>) {
+pub fn villager_added(
+    mut commands: Commands,
+    query: Query<(Entity, &EnemyTag), Added<EnemyTag>>,
+    mut score: ResMut<Score>,
+) {
     for (entity, tag) in &query {
         if *tag != EnemyTag::Villager {
             continue;
         }
+
+        score.villager_spawned();
 
         for x in -1..=1 {
             for y in -1..=1 {

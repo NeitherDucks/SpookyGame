@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::ldtk::{animation::new_animation, entities::EnemyTag};
+use crate::{
+    game_mode::Score,
+    ldtk::{animation::new_animation, entities::EnemyTag},
+};
 
 use super::{Idle, RunAway, TalkToInvestigator, Wander, VILLAGER_ANIMATION_DEATH};
 
@@ -9,13 +12,19 @@ use super::{Idle, RunAway, TalkToInvestigator, Wander, VILLAGER_ANIMATION_DEATH}
 #[component(storage = "SparseSet")]
 pub struct Dead;
 
-pub fn dead_on_enter(mut commands: Commands, query: Query<(Entity, &EnemyTag), Added<Dead>>) {
+pub fn dead_on_enter(
+    mut commands: Commands,
+    query: Query<(Entity, &EnemyTag), Added<Dead>>,
+    mut score: ResMut<Score>,
+) {
     for (entity, tag) in &query {
         // Only villagers should have the Dead state.
         if *tag != EnemyTag::Villager {
             commands.entity(entity).remove::<Dead>();
             continue;
         }
+
+        score.villager_killed();
 
         // Remove any states the villager might be in.
         commands
