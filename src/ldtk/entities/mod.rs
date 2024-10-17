@@ -1,9 +1,11 @@
 pub mod collision_tile;
+pub mod dead_player;
 pub mod hidding_spot;
 pub mod interactible;
 pub mod investigator;
 pub mod noise_maker;
 pub mod player;
+pub mod player_respawn_point;
 pub mod villager;
 
 use bevy_ecs_ldtk::{prelude::LdtkFields, EntityIid, EntityInstance, LdtkIntCell};
@@ -14,7 +16,8 @@ pub use hidding_spot::*;
 pub use interactible::*;
 pub use investigator::*;
 pub use noise_maker::*;
-pub use player::PlayerBundle;
+pub use player::*;
+pub use player_respawn_point::*;
 pub use villager::*;
 
 // IMPROVEME

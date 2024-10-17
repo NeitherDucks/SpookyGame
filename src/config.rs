@@ -45,14 +45,15 @@ pub const TILE_SIZE: IVec2 = IVec2::new(PIXEL_PER_TILE as i32, PIXEL_PER_TILE as
 
 // ANIMATIONS
 //// PLAYER
-pub const PLAYER_ANIMATION_IDLE: AnimationConfig = AnimationConfig::new(0, 0, 8);
+pub const PLAYER_ANIMATION_IDLE: AnimationConfig = AnimationConfig::new(0, 4, 8).repeats();
+pub const PLAYER_ANIMATION_DEATH: AnimationConfig = AnimationConfig::new(4, 7, 8);
 
 //// INVESTIGATOR
-pub const INVESTIGATOR_ANIMATION_IDLE: AnimationConfig = AnimationConfig::new(0, 0, 8);
+pub const INVESTIGATOR_ANIMATION_IDLE: AnimationConfig = AnimationConfig::new(0, 0, 8).repeats();
 
 //// VILLAGER
-pub const VILLAGER_ANIMATION_IDLE: AnimationConfig = AnimationConfig::new(0, 0, 8);
+pub const VILLAGER_ANIMATION_IDLE: AnimationConfig = AnimationConfig::new(0, 0, 8).repeats();
 pub const VILLAGER_ANIMATION_DEATH: AnimationConfig = AnimationConfig::new(0, 0, 8);
 
 /// NOISE MAKER
-pub const NOISE_MAKER_ANIMATION: AnimationConfig = AnimationConfig::new(0, 4, 8);
+pub const NOISE_MAKER_ANIMATION: AnimationConfig = AnimationConfig::new(0, 4, 8).repeats();

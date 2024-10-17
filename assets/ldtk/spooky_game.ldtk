@@ -11,7 +11,7 @@
 	"iid": "3fbccba0-73f0-11ef-8459-8d6b718bce1c",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 36,
+	"nextUid": 39,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "LinearHorizontal",
@@ -544,6 +544,41 @@
 					"tilesetUid": null
 				}
 			]
+		},
+		{
+			"identifier": "PlayerRespawnPoint",
+			"uid": 36,
+			"tags": [],
+			"exportToToc": false,
+			"allowOutOfBounds": false,
+			"doc": null,
+			"width": 16,
+			"height": 16,
+			"resizableX": false,
+			"resizableY": false,
+			"minWidth": null,
+			"maxWidth": null,
+			"minHeight": null,
+			"maxHeight": null,
+			"keepAspectRatio": false,
+			"tileOpacity": 1,
+			"fillOpacity": 1,
+			"lineOpacity": 1,
+			"hollow": false,
+			"color": "#94C689",
+			"renderMode": "Rectangle",
+			"showName": true,
+			"tilesetId": null,
+			"tileRenderMode": "FitInside",
+			"tileRect": null,
+			"uiTileRect": null,
+			"nineSliceBorders": [],
+			"maxCount": 0,
+			"limitScope": "PerLevel",
+			"limitBehavior": "MoveLastOne",
+			"pivotX": 0,
+			"pivotY": 0,
+			"fieldDefs": []
 		}
 	], "tilesets": [
 		{
@@ -604,13 +639,13 @@
 			"cachedPixelData": { "opaqueTiles": "0", "averageColors": "6652" }
 		},
 		{
-			"__cWid": 1,
+			"__cWid": 8,
 			"__cHei": 1,
 			"identifier": "Player_placeholder",
 			"uid": 4,
 			"relPath": "../2d/player_placeholder.png",
 			"embedAtlas": null,
-			"pxWid": 16,
+			"pxWid": 128,
 			"pxHei": 16,
 			"tileGridSize": 16,
 			"spacing": 0,
@@ -620,7 +655,7 @@
 			"enumTags": [],
 			"customData": [],
 			"savedSelections": [],
-			"cachedPixelData": { "opaqueTiles": "0", "averageColors": "68d2" }
+			"cachedPixelData": { "opaqueTiles": "00000000", "averageColors": "69d569d569d569d569d5a7b4d8b6f9b7" }
 		},
 		{
 			"__cWid": 5,
@@ -1323,6 +1358,20 @@
 							"height": 16,
 							"defUid": 15,
 							"px": [168,72],
+							"fieldInstances": []
+						},
+						{
+							"__identifier": "PlayerRespawnPoint",
+							"__grid": [26,26],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#94C689",
+							"iid": "11702110-73f0-11ef-99fc-7dfc89de800e",
+							"width": 16,
+							"height": 16,
+							"defUid": 36,
+							"px": [416,416],
 							"fieldInstances": []
 						}
 					]

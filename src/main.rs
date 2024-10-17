@@ -18,7 +18,7 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rand::plugin::EntropyPlugin;
 use bevy_rand::prelude::WyRand;
 use bevy_rapier2d::plugin::{NoUserData, RapierConfiguration, RapierPhysicsPlugin, TimestepMode};
-use bevy_rapier2d::render::RapierDebugRenderPlugin;
+// use bevy_rapier2d::render::RapierDebugRenderPlugin;
 use config::PIXEL_PER_TILE;
 use game_mode::GamePlugin;
 use grid::{GridPlugin, Tile};
@@ -36,7 +36,7 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins.set(ImagePlugin::default_nearest()),
-            RapierDebugRenderPlugin::default(), // for debug
+            // RapierDebugRenderPlugin::default(), // for debug
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(PIXEL_PER_TILE),
             WorldInspectorPlugin::new(), // for debug
             EntropyPlugin::<WyRand>::default(),

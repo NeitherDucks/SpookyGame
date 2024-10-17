@@ -1,4 +1,4 @@
-use animation::update_animations;
+use animation::{animation_changed, update_animations, update_animations_during_death};
 use bevy::prelude::*;
 use iyes_progress::prelude::*;
 
@@ -27,6 +27,9 @@ use crate::{
 #[derive(Resource)]
 pub struct SpaceBarSpriteHandle(Handle<Image>);
 
+#[derive(Resource)]
+pub struct DeadPlayerSpriteHandle(pub Handle<Image>);
+
 pub struct MyLdtkPlugin;
 
 impl Plugin for MyLdtkPlugin {
@@ -43,6 +46,7 @@ impl Plugin for MyLdtkPlugin {
         .register_ldtk_entity::<HiddingSpotBundle>("HiddingSpot")
         .register_ldtk_entity::<NoiseMakerBundle>("NoiseMaker")
         .register_ldtk_entity::<InteractibleBundle>("Interactible")
+        .register_ldtk_entity::<PlayerRespawnPointBundle>("PlayerRespawnPoint")
         .register_ldtk_int_cell::<CollisionTileBundle>(1)
         .register_type::<InteractionPossible>()
         .register_type::<InteractibleEntityRef>()
@@ -61,8 +65,15 @@ impl Plugin for MyLdtkPlugin {
                 interaction_events,
                 noise_maker_trigger_removed,
                 villager_added,
+                on_respawn_point_added,
+                animation_changed,
             )
                 .run_if(in_state(PlayingState::Playing)),
+        )
+        .add_systems(
+            Update,
+            (update_animations_during_death, animation_changed)
+                .run_if(in_state(PlayingState::Death)),
         )
         .insert_resource(LevelSelection::index(0));
     }
@@ -74,8 +85,8 @@ fn setup(
     mut loading: ResMut<AssetsLoading>,
 ) {
     let ldtk_file: Handle<LdtkProject> = asset_server.load("ldtk/spooky_game.ldtk");
-
     let spacebar_sprite: Handle<Image> = asset_server.load("2d/space_bar.png");
+    let deadplayer_sprite: Handle<Image> = asset_server.load("2d/dead_player.png");
 
     commands.spawn(LdtkWorldBundle {
         ldtk_handle: ldtk_file.clone(),
@@ -83,9 +94,11 @@ fn setup(
     });
 
     commands.insert_resource(SpaceBarSpriteHandle(spacebar_sprite.clone()));
+    commands.insert_resource(DeadPlayerSpriteHandle(deadplayer_sprite.clone()));
 
     loading.add(&ldtk_file);
     loading.add(&spacebar_sprite);
+    loading.add(&deadplayer_sprite);
 }
 
 fn cleanup(mut commands: Commands, ldtk_world: Query<Entity, With<Handle<LdtkProject>>>) {

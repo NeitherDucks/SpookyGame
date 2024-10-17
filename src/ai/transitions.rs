@@ -8,6 +8,7 @@ use crate::{
     ldtk::entities::{noise_maker::NoiseMakerTriggered, player::PlayerTag, Aim, EnemyTag},
     pathfinding::Path,
     player_controller::{is_player_visible, PlayerIsHidding},
+    states::PlayingState,
 };
 
 use super::{Chase, Chased, Dead, Idle, Investigate, RunAway, TalkToInvestigator, Wander};
@@ -270,6 +271,7 @@ pub fn chasing_to_killing(
     mut commands: Commands,
     query: Query<(Entity, &Transform), With<Chase>>,
     player: Query<(Entity, &Transform), With<PlayerTag>>,
+    mut next_state: ResMut<NextState<PlayingState>>,
 ) {
     if let Ok((_, player_transform)) = player.get_single() {
         for (entity, transform) in &query {
@@ -283,6 +285,7 @@ pub fn chasing_to_killing(
 
                 // TODO: Add death
                 warn!("Player died!");
+                next_state.set(PlayingState::Death);
             }
         }
     }
