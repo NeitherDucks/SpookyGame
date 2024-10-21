@@ -168,7 +168,7 @@ fn player_respawn(
 
     // Spawn dead "player", so it's visible later
     commands.spawn(DeadPlayerBundle::new(
-        &Transform::from_translation(player_transform.translation.with_z(0.5)),
+        &Transform::from_translation(player_transform.translation.with_z(2.)),
         dead_player_handle.0.clone(),
     ));
 
