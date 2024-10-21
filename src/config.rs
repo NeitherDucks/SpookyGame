@@ -40,8 +40,8 @@ pub const INTERACTION_DISTANCE: f32 = 1.1 * PIXEL_PER_TILE; // In world units
 
 // MAP
 
-pub const GRID_SIZE: IVec2 = IVec2::new(30, 30); // Defined in the ldtk file
-pub const TILE_SIZE: IVec2 = IVec2::new(PIXEL_PER_TILE as i32, PIXEL_PER_TILE as i32); // Defined in the ldtk file
+pub const GRID_SIZE: IVec2 = IVec2::new(50, 40); // Defined in the ldtk file
+pub const TILE_SIZE: IVec2 = IVec2::splat(PIXEL_PER_TILE as i32); // Defined in the ldtk file
 
 // ANIMATIONS
 

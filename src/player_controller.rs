@@ -123,10 +123,7 @@ fn spacebar_pressed(
         (With<PlayerTag>, Without<Chased>),
     >,
     enemies: Query<(Entity, &Transform, &EnemyTag), Without<PlayerTag>>,
-    hidding_spots: Query<
-        (&Transform, &InteractibleEntityRef, &HiddingSpotExit),
-        Without<PlayerTag>,
-    >,
+    hidding_spots: Query<(&Transform, &HiddingSpotExit), Without<PlayerTag>>,
     noise_makers: Query<
         (
             Entity,
@@ -169,7 +166,7 @@ fn spacebar_pressed(
         match interaction.interactibe_type {
             InteractibleTag::HiddingSpot => {
                 // If we can get the position of hiding spot from the interaction
-                let Ok((hidding_spot_transform, _, exit_location)) =
+                let Ok((hidding_spot_transform, exit_location)) =
                     hidding_spots.get(interaction.entity)
                 else {
                     return;

@@ -36,7 +36,7 @@ impl<T: Component> Plugin for GridPlugin<T> {
 
 #[derive(Resource)]
 pub struct Grid<T> {
-    pub entities: [[Option<Entity>; GRID_SIZE.x as usize]; GRID_SIZE.y as usize],
+    pub entities: [[Option<Entity>; GRID_SIZE.y as usize]; GRID_SIZE.x as usize],
     _marker: PhantomData<T>,
 }
 
@@ -52,7 +52,7 @@ impl<T> Clone for Grid<T> {
 impl<T> Default for Grid<T> {
     fn default() -> Self {
         Self {
-            entities: [[None; GRID_SIZE.x as usize]; GRID_SIZE.y as usize],
+            entities: [[None; GRID_SIZE.y as usize]; GRID_SIZE.x as usize],
             _marker: Default::default(),
         }
     }
