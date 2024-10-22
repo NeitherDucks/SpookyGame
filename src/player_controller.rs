@@ -187,7 +187,7 @@ fn spacebar_pressed(
         // Get exit position
         // Move player to exit
         // IMPROVEME: Tweening between positions
-        *player_transform = Transform::from_translation(hidding.0.extend(0.));
+        player_transform.translation = hidding.0.extend(12.);
         // Change collision to Fixed and remove PlayerIsHidding tag.
         commands
             .entity(player)
@@ -218,7 +218,7 @@ fn spacebar_pressed(
 
                 // Move player to hidding spot
                 // IMPROVEME: Tweening between positions
-                *player_transform = *hidding_spot_transform;
+                player_transform.translation = hidding_spot_transform.translation.with_z(12.);
             }
             InteractibleTag::NoiseMaker => {
                 // If we can get the linked noise maker from the interaction.

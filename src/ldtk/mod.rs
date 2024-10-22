@@ -2,8 +2,11 @@ use animation::{
     animation_changed, update_animations, update_animations_during_death, AnimationFinishedEvent,
 };
 use bevy::prelude::*;
+use bevy_ecs_tilemap::tiles::TileTextureIndex;
+use bevy_rand::prelude::{GlobalEntropy, WyRand};
 use collision_tile::AICollisionTileBundle;
 use iyes_progress::prelude::*;
+use rand_core::RngCore;
 
 pub mod animation;
 pub mod entities;
@@ -11,6 +14,7 @@ pub mod entities;
 use crate::{
     ai::Chased,
     rendering::{HEIGHT_LAYERS, NORMALS_LAYERS},
+    utils::remap_rand_f32,
 };
 use bevy_ecs_ldtk::{
     app::{LdtkEntityAppExt, LdtkIntCellAppExt},
@@ -35,6 +39,18 @@ pub struct SpaceBarSpriteHandle(Handle<Image>);
 
 #[derive(Resource)]
 pub struct DeadPlayerSpriteHandle(pub Handle<Image>);
+
+#[derive(Component)]
+pub struct AnimatedLdtkLayer;
+
+#[derive(Resource, Reflect)]
+pub struct AnimatedLdtkLayerTimer(pub Timer);
+
+#[derive(Component)]
+pub struct ConstantAnimatedLdtkLayer;
+
+#[derive(Resource, Reflect)]
+pub struct ConstantAnimatedLdtkLayerTimer(pub Timer);
 
 pub struct MyLdtkPlugin;
 
@@ -77,7 +93,9 @@ impl Plugin for MyLdtkPlugin {
                 villager_added,
                 on_respawn_point_added,
                 animation_changed,
-                split_layer_test,
+                modify_ldtk_layers,
+                update_layer_animations,
+                update_layer_animations_constant,
             )
                 .run_if(in_state(PlayingState::Playing)),
         )
@@ -110,6 +128,16 @@ fn setup(
     loading.add(&ldtk_file);
     loading.add(&spacebar_sprite);
     loading.add(&deadplayer_sprite);
+
+    commands.insert_resource(AnimatedLdtkLayerTimer(Timer::from_seconds(
+        1. / 2., // 2 fps
+        TimerMode::Repeating,
+    )));
+
+    commands.insert_resource(ConstantAnimatedLdtkLayerTimer(Timer::from_seconds(
+        1. / 8., // 8 fps
+        TimerMode::Repeating,
+    )));
 }
 
 fn cleanup(mut commands: Commands, ldtk_world: Query<Entity, With<Handle<LdtkProject>>>) {
@@ -227,7 +255,7 @@ pub fn interaction_events(
     }
 }
 
-fn split_layer_test(
+fn modify_ldtk_layers(
     mut commands: Commands,
     mut query: Query<(Entity, &LayerMetadata, &mut Visibility), Added<LayerMetadata>>,
 ) {
@@ -242,8 +270,66 @@ fn split_layer_test(
             "IntGrid" => {
                 *visibility = Visibility::Hidden;
             }
+            "AnimatedTilesTop" => {
+                commands
+                    .entity(entity)
+                    .insert((PIXEL_PERFECT_LAYERS, ConstantAnimatedLdtkLayer));
+            }
+            "AnimatedTilesBelow" => {
+                commands
+                    .entity(entity)
+                    .insert((PIXEL_PERFECT_LAYERS, AnimatedLdtkLayer));
+            }
             _ => {
                 commands.entity(entity).insert(PIXEL_PERFECT_LAYERS);
+            }
+        }
+    }
+}
+
+fn update_layer_animations(
+    query: Query<&Children, With<AnimatedLdtkLayer>>,
+    mut query_children: Query<&mut TileTextureIndex, Without<AnimatedLdtkLayer>>,
+    mut timer: ResMut<AnimatedLdtkLayerTimer>,
+    time: Res<Time>,
+    mut rng: ResMut<GlobalEntropy<WyRand>>,
+) {
+    timer.0.tick(time.delta());
+
+    if timer.0.finished() {
+        for children in &query {
+            for child in children {
+                if let Ok(mut index) = query_children.get_mut(*child) {
+                    // 10% chance to animate the tile
+                    if remap_rand_f32(rng.next_u32(), 0., 1.) < 0.1 {
+                        let x = index.0.rem_euclid(4);
+                        let y = index.0 / 4;
+
+                        index.0 = (x + 1).rem_euclid(4) + (y * 4);
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn update_layer_animations_constant(
+    query: Query<&Children, With<ConstantAnimatedLdtkLayer>>,
+    mut query_children: Query<&mut TileTextureIndex, Without<ConstantAnimatedLdtkLayer>>,
+    mut timer: ResMut<ConstantAnimatedLdtkLayerTimer>,
+    time: Res<Time>,
+) {
+    timer.0.tick(time.delta());
+
+    if timer.0.finished() {
+        for children in &query {
+            for child in children {
+                if let Ok(mut index) = query_children.get_mut(*child) {
+                    let x = index.0.rem_euclid(4);
+                    let y = index.0 / 4;
+
+                    index.0 = (x + 1).rem_euclid(4) + (y * 4);
+                }
             }
         }
     }

@@ -1,4 +1,5 @@
 mod ai;
+mod config;
 mod game_mode;
 mod grid;
 mod ldtk;
@@ -9,8 +10,6 @@ mod rendering;
 mod states;
 mod utils;
 
-mod config;
-
 use ai::AiPlugin;
 use bevy::prelude::*;
 use bevy_dev_tools::states::log_transitions;
@@ -19,6 +18,7 @@ use bevy_rand::plugin::EntropyPlugin;
 use bevy_rand::prelude::WyRand;
 use bevy_rapier2d::plugin::{NoUserData, RapierConfiguration, RapierPhysicsPlugin, TimestepMode};
 // use bevy_rapier2d::render::RapierDebugRenderPlugin;
+
 use config::PIXEL_PER_TILE;
 use game_mode::GamePlugin;
 use grid::{GridPlugin, Tile};

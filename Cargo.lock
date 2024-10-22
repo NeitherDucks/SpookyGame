@@ -10,6 +10,7 @@ dependencies = [
  "bevy-inspector-egui",
  "bevy_dev_tools",
  "bevy_ecs_ldtk",
+ "bevy_ecs_tilemap",
  "bevy_rand",
  "bevy_rapier2d",
  "getrandom",

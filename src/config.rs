@@ -40,7 +40,7 @@ pub const INTERACTION_DISTANCE: f32 = 1.1 * PIXEL_PER_TILE; // In world units
 
 // MAP
 
-pub const GRID_SIZE: IVec2 = IVec2::new(50, 40); // Defined in the ldtk file
+pub const GRID_SIZE: IVec2 = IVec2::new(54, 40); // Defined in the ldtk file
 pub const TILE_SIZE: IVec2 = IVec2::splat(PIXEL_PER_TILE as i32); // Defined in the ldtk file
 
 // ANIMATIONS
@@ -49,11 +49,11 @@ pub const TILE_SIZE: IVec2 = IVec2::splat(PIXEL_PER_TILE as i32); // Defined in 
 pub const PLAYER_ANIMATION_IDLE: AnimationConfig =
     AnimationConfig::new(ANIMATIONS::PlayerIdle, 0, 5, 8).repeats();
 pub const PLAYER_ANIMATION_RUN: AnimationConfig =
-    AnimationConfig::new(ANIMATIONS::PlayerRun, 15, 25, 8).repeats();
+    AnimationConfig::new(ANIMATIONS::PlayerRun, 14, 25, 8).repeats();
 pub const PLAYER_ANIMATION_ATTACK: AnimationConfig =
-    AnimationConfig::new(ANIMATIONS::PlayerAttack, 30, 43, 12).resets();
+    AnimationConfig::new(ANIMATIONS::PlayerAttack, 28, 41, 12).resets();
 pub const PLAYER_ANIMATION_DEATH: AnimationConfig =
-    AnimationConfig::new(ANIMATIONS::PlayerDeath, 45, 58, 8);
+    AnimationConfig::new(ANIMATIONS::PlayerDeath, 42, 50, 8);
 pub const PLAYER_ANIMATION_HIDDING: AnimationConfig =
     AnimationConfig::new(ANIMATIONS::PlayerHidding, 10, 10, 8);
 
@@ -71,7 +71,7 @@ pub const VILLAGER_ANIMATION_IDLE: AnimationConfig =
 pub const VILLAGER_ANIMATION_WALK: AnimationConfig =
     AnimationConfig::new(ANIMATIONS::VillagerWalk, 16, 19, 8).repeats();
 pub const VILLAGER_ANIMATION_FLEE: AnimationConfig =
-    AnimationConfig::new(ANIMATIONS::VillagerFlee, 16, 19, 8).repeats();
+    AnimationConfig::new(ANIMATIONS::VillagerFlee, 48, 51, 8).repeats();
 pub const VILLAGER_ANIMATION_DEATH: AnimationConfig =
     AnimationConfig::new(ANIMATIONS::VillagerDeath, 64, 67, 8);
 

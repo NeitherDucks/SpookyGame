@@ -13,8 +13,6 @@ pub struct HiddingSpotExit(pub Vec2);
 #[derive(Bundle, LdtkEntity)]
 pub struct HiddingSpotBundle {
     render_layer: RenderLayers,
-    #[sprite_sheet_bundle]
-    sprite_sheet_bundle: LdtkSpriteSheetBundle,
     #[with(exit_from_field)]
     exit: HiddingSpotExit,
 }
@@ -23,7 +21,6 @@ impl Default for HiddingSpotBundle {
     fn default() -> Self {
         HiddingSpotBundle {
             render_layer: PIXEL_PERFECT_LAYERS,
-            sprite_sheet_bundle: LdtkSpriteSheetBundle::default(),
             exit: HiddingSpotExit::default(),
         }
     }
