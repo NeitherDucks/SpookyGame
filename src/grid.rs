@@ -59,6 +59,10 @@ impl<T> Default for Grid<T> {
 }
 
 impl<T> Grid<T> {
+    pub fn reset(&mut self) {
+        self.entities = [[None; GRID_SIZE.y as usize]; GRID_SIZE.x as usize];
+    }
+
     pub fn occupied(&self, location: &GridLocation) -> bool {
         Grid::<T>::valid_index(location) && self[location].is_some()
     }

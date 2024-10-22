@@ -4,6 +4,7 @@ use bevy_dev_tools::states::log_transitions;
 use crate::{
     ai::Chased,
     config::{PLAYER_ANIMATION_DEATH, PLAYER_ANIMATION_IDLE},
+    grid::{Grid, Tile},
     ldtk::{
         animation::{new_animation_during_death, AnimationFinishedEvent, ANIMATIONS},
         entities::{
@@ -13,7 +14,7 @@ use crate::{
         },
         DeadPlayerSpriteHandle,
     },
-    rendering::InGameCamera,
+    rendering::{Cameras, InGameCamera},
     states::{GameState, PlayingState},
 };
 
@@ -204,15 +205,28 @@ fn player_respawn(
 
 fn reset(
     mut commands: Commands,
+    mut cameras: Query<&mut Transform, With<Cameras>>,
     dead_players: Query<Entity, With<DeadPlayerTag>>,
+    mut grid: ResMut<Grid<Tile>>,
     mut score: ResMut<Score>,
     mut next_state: ResMut<NextState<GameState>>,
 ) {
+    // Reset score
     *score = Score::default();
 
+    // Remove any rotations on cameras group.
+    for mut transform in &mut cameras {
+        transform.rotation = Quat::IDENTITY;
+    }
+
+    // Remove any dead players that was spawned manually.
     for entity in &dead_players {
         commands.entity(entity).despawn_recursive();
     }
 
+    // Empty the pathfinding grid.
+    grid.reset();
+
+    // Get to playing
     next_state.set(GameState::Playing);
 }
