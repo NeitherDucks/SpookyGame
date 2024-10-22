@@ -4,8 +4,6 @@ TO ADD:
     - Sounds
     - Music
     - Lighting!
-    - Restart button in Pause Menu
-    - Quit button in Win / Lose / Pause Menu if Web
 
 TO FIX:
 
