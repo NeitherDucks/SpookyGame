@@ -7,10 +7,11 @@ use bevy_rand::prelude::{GlobalEntropy, WyRand};
 use crate::{
     config::{INVESTIGATING_RADIUS, RUNNING_SPEED},
     grid::{Grid, Tile},
+    ldtk::{animation::new_animation, entities::AnimationConfig},
     pathfinding::Path,
 };
 
-use super::MovementSpeed;
+use super::{MovementSpeed, INVESTIGATOR_ANIMATION_RUN};
 
 #[derive(Clone, Component)]
 #[component(storage = "SparseSet")]
@@ -30,9 +31,16 @@ impl Default for Investigate {
     }
 }
 
-pub fn investigate_on_enter(mut commands: Commands, query: Query<Entity, Added<Investigate>>) {
-    for entity in &query {
+pub fn investigate_on_enter(
+    mut commands: Commands,
+    query: Query<(Entity, &AnimationConfig), Added<Investigate>>,
+) {
+    for (entity, animation) in &query {
         commands.entity(entity).insert(MovementSpeed(RUNNING_SPEED));
+
+        commands.entity(entity).insert(new_animation(
+            INVESTIGATOR_ANIMATION_RUN.with_offset(animation.get_offset()),
+        ));
     }
 }
 

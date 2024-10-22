@@ -2,12 +2,16 @@ use animation::{
     animation_changed, update_animations, update_animations_during_death, AnimationFinishedEvent,
 };
 use bevy::prelude::*;
+use collision_tile::AICollisionTileBundle;
 use iyes_progress::prelude::*;
 
 pub mod animation;
 pub mod entities;
 
-use crate::ai::Chased;
+use crate::{
+    ai::Chased,
+    rendering::{HEIGHT_LAYERS, NORMALS_LAYERS},
+};
 use bevy_ecs_ldtk::{
     app::{LdtkEntityAppExt, LdtkIntCellAppExt},
     assets::LdtkProject,
@@ -50,11 +54,14 @@ impl Plugin for MyLdtkPlugin {
         .register_ldtk_entity::<InteractibleBundle>("Interactible")
         .register_ldtk_entity::<PlayerRespawnPointBundle>("PlayerRespawnPoint")
         .register_ldtk_int_cell::<CollisionTileBundle>(1)
+        .register_ldtk_int_cell::<AICollisionTileBundle>(2)
         .register_type::<InteractionPossible>()
         .register_type::<InteractibleEntityRef>()
         .register_type::<ActiveCollisionTypes>()
         .register_type::<ActiveEvents>()
         .register_type::<EnemyTag>()
+        .register_type::<Aim>()
+        .register_type::<AnimationConfig>()
         .add_event::<AnimationFinishedEvent>()
         .add_systems(OnEnter(PlayingState::Loading), setup)
         .add_systems(OnExit(GameState::Playing), cleanup)
@@ -70,6 +77,7 @@ impl Plugin for MyLdtkPlugin {
                 villager_added,
                 on_respawn_point_added,
                 animation_changed,
+                split_layer_test,
             )
                 .run_if(in_state(PlayingState::Playing)),
         )
@@ -215,6 +223,28 @@ pub fn interaction_events(
                 ))
                 .id();
             commands.entity(entity).add_child(child);
+        }
+    }
+}
+
+fn split_layer_test(
+    mut commands: Commands,
+    mut query: Query<(Entity, &LayerMetadata, &mut Visibility), Added<LayerMetadata>>,
+) {
+    for (entity, layer, mut visibility) in &mut query {
+        match layer.identifier.as_str() {
+            "NORMALS" => {
+                commands.entity(entity).insert(NORMALS_LAYERS);
+            }
+            "HEIGHT" => {
+                commands.entity(entity).insert(HEIGHT_LAYERS);
+            }
+            "IntGrid" => {
+                *visibility = Visibility::Hidden;
+            }
+            _ => {
+                commands.entity(entity).insert(PIXEL_PERFECT_LAYERS);
+            }
         }
     }
 }

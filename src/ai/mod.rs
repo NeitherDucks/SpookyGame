@@ -24,7 +24,12 @@ use talk_to_investigator::*;
 use transitions::*;
 use wander::*;
 
-use crate::{config::*, ldtk::entities::Aim, pathfinding::Path, states::PlayingState};
+use crate::{
+    config::*,
+    ldtk::entities::{Aim, AnimationConfig},
+    pathfinding::Path,
+    states::PlayingState,
+};
 
 // All the logic for transitioning from different Tasks will be executed during this schedule.
 #[derive(ScheduleLabel, Debug, Clone, PartialEq, Eq, Hash)]
@@ -90,6 +95,7 @@ impl Plugin for AiPlugin {
         .add_systems(
             AiOnEnter,
             (
+                idle_on_enter,
                 chase_on_enter,
                 investigate_on_enter,
                 run_away_on_enter,
@@ -106,6 +112,7 @@ impl Plugin for AiPlugin {
                 investigate_update,
                 talk_to_investigator_update,
                 follow_path,
+                update_animation_aim,
             )
                 .run_if(in_state(PlayingState::Playing)),
         )
@@ -135,6 +142,24 @@ fn follow_path(
                 aim.0 = direction;
             } else {
                 path.steps.pop_front();
+            }
+        }
+    }
+}
+
+fn update_animation_aim(mut query: Query<(&mut AnimationConfig, &Aim), Changed<Aim>>) {
+    for (mut animation, aim) in &mut query {
+        if aim.0.x.abs() > aim.0.y.abs() {
+            if aim.0.x > 0. {
+                animation.set_offset_animation(0);
+            } else {
+                animation.set_offset_animation(1);
+            }
+        } else {
+            if aim.0.y > 0. {
+                animation.set_offset_animation(3);
+            } else {
+                animation.set_offset_animation(2);
             }
         }
     }

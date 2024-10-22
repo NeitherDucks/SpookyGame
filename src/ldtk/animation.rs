@@ -2,13 +2,26 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
+use super::{
+    INVESTIGATOR_ANIMATION_IDLE, INVESTIGATOR_ANIMATION_RUN, INVESTIGATOR_ANIMATION_WALK,
+    VILLAGER_ANIMATION_DEATH, VILLAGER_ANIMATION_FLEE, VILLAGER_ANIMATION_IDLE,
+    VILLAGER_ANIMATION_WALK,
+};
+
 // Enum of all animations
-#[derive(Clone, Copy, Eq, PartialEq)]
+#[derive(Reflect, Clone, Copy, Eq, PartialEq)]
 pub enum ANIMATIONS {
     PlayerIdle,
+    PlayerRun,
+    PlayerAttack,
     PlayerDeath,
+    PlayerHidding,
     InvestigatorIdle,
+    InvestigatorWalk,
+    InvestigatorRun,
     VillagerIdle,
+    VillagerWalk,
+    VillagerFlee,
     VillagerDeath,
     NoiseMaker,
 }
@@ -19,7 +32,7 @@ pub struct AnimationFinishedEvent(pub ANIMATIONS);
 #[derive(Component)]
 pub struct DuringDeathAnimation;
 
-#[derive(Component, Clone, Copy)]
+#[derive(Component, Reflect, Clone, Copy)]
 pub struct AnimationConfig {
     name: ANIMATIONS,
     first_sprite_index: usize,
@@ -27,6 +40,7 @@ pub struct AnimationConfig {
     fps: u8,
     repeat: bool,
     reset: bool,
+    current_offset: u8,
 }
 
 impl AnimationConfig {
@@ -38,6 +52,7 @@ impl AnimationConfig {
             fps,
             repeat: false,
             reset: false,
+            current_offset: 0,
         }
     }
 
@@ -53,6 +68,45 @@ impl AnimationConfig {
             repeat: true,
             ..*self
         }
+    }
+
+    pub const fn with_offset(&self, offset: u8) -> Self {
+        Self {
+            current_offset: offset,
+            ..*self
+        }
+    }
+
+    pub fn get_offset(&self) -> u8 {
+        self.current_offset
+    }
+
+    pub fn get_name(&self) -> ANIMATIONS {
+        self.name
+    }
+
+    pub fn set_offset_animation(&mut self, shift: u8) {
+        (self.first_sprite_index, self.last_sprite_index) = match self.name {
+            ANIMATIONS::InvestigatorIdle => INVESTIGATOR_ANIMATION_IDLE.offset(shift),
+            ANIMATIONS::InvestigatorRun => INVESTIGATOR_ANIMATION_RUN.offset(shift),
+            ANIMATIONS::InvestigatorWalk => INVESTIGATOR_ANIMATION_WALK.offset(shift),
+            ANIMATIONS::VillagerDeath => VILLAGER_ANIMATION_DEATH.offset(shift),
+            ANIMATIONS::VillagerFlee => VILLAGER_ANIMATION_FLEE.offset(shift),
+            ANIMATIONS::VillagerIdle => VILLAGER_ANIMATION_IDLE.offset(shift),
+            ANIMATIONS::VillagerWalk => VILLAGER_ANIMATION_WALK.offset(shift),
+            _ => {
+                return;
+            }
+        };
+
+        self.current_offset = shift;
+    }
+
+    fn offset(&self, shift: u8) -> (usize, usize) {
+        (
+            self.first_sprite_index + (shift * 4) as usize,
+            self.last_sprite_index + (shift * 4) as usize,
+        )
     }
 
     pub fn timer_from_fps(fps: u8) -> Timer {

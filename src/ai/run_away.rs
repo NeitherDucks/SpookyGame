@@ -5,10 +5,11 @@ use bevy_rand::prelude::{GlobalEntropy, WyRand};
 use crate::{
     config::{MAX_RUN_AWAY_RADIUS, MIN_RUN_AWAY_RADIUS, RUNNING_SPEED},
     grid::{Grid, Tile},
+    ldtk::{animation::new_animation, entities::AnimationConfig},
     pathfinding::Path,
 };
 
-use super::MovementSpeed;
+use super::{MovementSpeed, VILLAGER_ANIMATION_FLEE};
 
 #[derive(Clone, Component)]
 #[component(storage = "SparseSet")]
@@ -19,11 +20,11 @@ pub struct RunAway {
 /// When [`RunAway`] is added, generate [`Path`].
 pub fn run_away_on_enter(
     mut commands: Commands,
-    query: Query<(Entity, &GridCoords, &RunAway), Added<RunAway>>,
+    query: Query<(Entity, &AnimationConfig, &GridCoords, &RunAway), Added<RunAway>>,
     grid: Res<Grid<Tile>>,
     mut rng: ResMut<GlobalEntropy<WyRand>>,
 ) {
-    for (entity, coords, run_away) in &query {
+    for (entity, animation, coords, run_away) in &query {
         if let Ok(target) = grid.find_away_from(
             &coords,
             &run_away.player_last_seen,
@@ -35,6 +36,10 @@ pub fn run_away_on_enter(
                 commands.entity(entity).insert(MovementSpeed(RUNNING_SPEED));
             }
         }
+
+        commands.entity(entity).insert(new_animation(
+            VILLAGER_ANIMATION_FLEE.with_offset(animation.get_offset()),
+        ));
     }
 }
 

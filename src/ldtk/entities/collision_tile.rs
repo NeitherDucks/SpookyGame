@@ -17,3 +17,14 @@ impl Default for CollisionTileBundle {
         }
     }
 }
+
+#[derive(Bundle, LdtkIntCell)]
+pub struct AICollisionTileBundle {
+    tile: Tile,
+}
+
+impl Default for AICollisionTileBundle {
+    fn default() -> Self {
+        AICollisionTileBundle { tile: Tile }
+    }
+}

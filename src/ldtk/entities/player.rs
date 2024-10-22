@@ -34,7 +34,10 @@ pub struct PlayerBundle {
 impl Default for PlayerBundle {
     fn default() -> Self {
         PlayerBundle {
-            collider: ColliderBundle::default(),
+            collider: ColliderBundle {
+                collider: Collider::cuboid(5.0, 5.0),
+                ..Default::default()
+            },
             active_collisions: ActiveCollisionTypes::STATIC_STATIC,
             controller: KinematicCharacterController::default(),
             animation: PLAYER_ANIMATION_IDLE,

@@ -3,16 +3,19 @@ use bevy_rapier2d::{plugin::RapierContext, prelude::*};
 
 use crate::{
     ai::{Chased, Dead},
-    config::{INVESTIGATOR_HEARING_RANGE, NOISE_MAKER_ANIMATION, PLAYER_SPEED},
+    config::{
+        INVESTIGATOR_HEARING_RANGE, NOISE_MAKER_ANIMATION, PLAYER_ANIMATION_ATTACK,
+        PLAYER_ANIMATION_HIDDING, PLAYER_ANIMATION_IDLE, PLAYER_ANIMATION_RUN, PLAYER_SPEED,
+    },
     ldtk::{
         animation::new_animation,
         entities::{
-            hidding_spot::HiddingSpotExit, player::PlayerTag, Aim, EnemyTag, InteractibleEntityRef,
+            hidding_spot::HiddingSpotExit, player::PlayerTag, Aim, AnimationConfig, EnemyTag,
             InteractibleTag, InteractionPossible, NoiseMakerInvestigateTarget,
             NoiseMakerReTriggerable, NoiseMakerTriggerable, NoiseMakerTriggered,
         },
     },
-    rendering::InGameCamera,
+    rendering::Cameras,
     states::{GameState, PlayingState},
 };
 
@@ -45,7 +48,7 @@ impl Plugin for PlayerPlugin {
 fn setup_camera(
     mut commands: Commands,
     player: Query<Entity, Added<PlayerTag>>,
-    camera: Query<Entity, With<InGameCamera>>,
+    camera: Query<Entity, With<Cameras>>,
 ) {
     let Ok(player) = player.get_single() else {
         return;
@@ -62,7 +65,7 @@ fn setup_camera(
 fn cleanup(
     mut commands: Commands,
     player: Query<Entity, With<PlayerTag>>,
-    camera: Query<Entity, With<InGameCamera>>,
+    camera: Query<Entity, With<Cameras>>,
 ) {
     let Ok(camera) = camera.get_single() else {
         return;
@@ -76,14 +79,25 @@ fn cleanup(
 }
 
 fn move_player(
+    mut commands: Commands,
     mut player: Query<
-        &mut KinematicCharacterController,
+        (
+            Entity,
+            &AnimationConfig,
+            &mut KinematicCharacterController,
+            &mut Transform,
+        ),
         (With<PlayerTag>, Without<PlayerIsHidding>),
     >,
+    mut cameras: Query<&mut Transform, (With<Cameras>, Without<PlayerTag>)>,
     time: Res<Time>,
     input: Res<ButtonInput<KeyCode>>,
 ) {
-    let Ok(mut controller) = player.get_single_mut() else {
+    let Ok((entity, animation, mut controller, mut transform)) = player.get_single_mut() else {
+        return;
+    };
+
+    let Ok(mut cameras) = cameras.get_single_mut() else {
         return;
     };
 
@@ -105,9 +119,31 @@ fn move_player(
         direction.x += 1.0;
     }
 
-    let move_delta = direction.normalize_or_zero() * PLAYER_SPEED * time.delta_seconds();
+    let direction = direction.normalize_or_zero();
+
+    let move_delta = direction * PLAYER_SPEED * time.delta_seconds();
 
     controller.translation = Some(move_delta);
+
+    if direction.length() < 0.1 {
+        if animation.get_name() != PLAYER_ANIMATION_IDLE.get_name() {
+            commands
+                .entity(entity)
+                .insert(new_animation(PLAYER_ANIMATION_IDLE));
+        }
+    } else {
+        if animation.get_name() != PLAYER_ANIMATION_RUN.get_name() {
+            commands
+                .entity(entity)
+                .insert(new_animation(PLAYER_ANIMATION_RUN));
+        }
+
+        // Get angle of the direction and snap to the closes 45 deg angle.
+        let angle = (direction.y.atan2(direction.x).to_degrees() / 45.).round() * 45.;
+
+        transform.rotation = Quat::from_euler(EulerRot::XYZ, 0., 0., angle.to_radians());
+        cameras.rotation = Quat::from_euler(EulerRot::XYZ, 0., 0., -angle.to_radians());
+    }
 }
 
 fn spacebar_pressed(
@@ -156,6 +192,7 @@ fn spacebar_pressed(
         commands
             .entity(player)
             .insert(RigidBody::Fixed)
+            .insert(new_animation(PLAYER_ANIMATION_IDLE))
             .remove::<PlayerIsHidding>();
     } else {
         // If there is a possible interaction
@@ -176,7 +213,8 @@ fn spacebar_pressed(
                 commands
                     .entity(player)
                     .insert(RigidBody::KinematicPositionBased)
-                    .insert(PlayerIsHidding(exit_location.0));
+                    .insert(PlayerIsHidding(exit_location.0))
+                    .insert(new_animation(PLAYER_ANIMATION_HIDDING));
 
                 // Move player to hidding spot
                 // IMPROVEME: Tweening between positions
@@ -222,15 +260,19 @@ fn spacebar_pressed(
                         }
                     }
                 }
+
+                commands
+                    .entity(player)
+                    .insert(new_animation(PLAYER_ANIMATION_ATTACK));
             }
             InteractibleTag::Villager => {
                 // Set dead state (this also handle animation and cleanup).
                 commands.entity(interaction.entity).insert(Dead);
 
-                // Add points to player?
-
                 // Play player kill animation
-                // TODO
+                commands
+                    .entity(player)
+                    .insert(new_animation(PLAYER_ANIMATION_ATTACK));
             }
         }
     }

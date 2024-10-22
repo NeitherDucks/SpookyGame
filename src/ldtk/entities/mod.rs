@@ -39,7 +39,7 @@ pub enum EnemyTag {
     Villager,
 }
 
-#[derive(Component, Clone, Copy)]
+#[derive(Component, Reflect, Clone, Copy)]
 pub struct Aim(pub Vec2);
 
 impl Default for Aim {

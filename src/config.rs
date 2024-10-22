@@ -47,19 +47,33 @@ pub const TILE_SIZE: IVec2 = IVec2::splat(PIXEL_PER_TILE as i32); // Defined in 
 
 //// PLAYER
 pub const PLAYER_ANIMATION_IDLE: AnimationConfig =
-    AnimationConfig::new(ANIMATIONS::PlayerIdle, 0, 4, 8).repeats();
+    AnimationConfig::new(ANIMATIONS::PlayerIdle, 0, 5, 8).repeats();
+pub const PLAYER_ANIMATION_RUN: AnimationConfig =
+    AnimationConfig::new(ANIMATIONS::PlayerRun, 15, 25, 8).repeats();
+pub const PLAYER_ANIMATION_ATTACK: AnimationConfig =
+    AnimationConfig::new(ANIMATIONS::PlayerAttack, 30, 43, 12).resets();
 pub const PLAYER_ANIMATION_DEATH: AnimationConfig =
-    AnimationConfig::new(ANIMATIONS::PlayerDeath, 4, 7, 8);
+    AnimationConfig::new(ANIMATIONS::PlayerDeath, 45, 58, 8);
+pub const PLAYER_ANIMATION_HIDDING: AnimationConfig =
+    AnimationConfig::new(ANIMATIONS::PlayerHidding, 10, 10, 8);
 
 //// INVESTIGATOR
 pub const INVESTIGATOR_ANIMATION_IDLE: AnimationConfig =
-    AnimationConfig::new(ANIMATIONS::InvestigatorIdle, 0, 0, 8).repeats();
+    AnimationConfig::new(ANIMATIONS::InvestigatorIdle, 0, 3, 8).repeats();
+pub const INVESTIGATOR_ANIMATION_WALK: AnimationConfig =
+    AnimationConfig::new(ANIMATIONS::InvestigatorWalk, 16, 19, 8).repeats();
+pub const INVESTIGATOR_ANIMATION_RUN: AnimationConfig =
+    AnimationConfig::new(ANIMATIONS::InvestigatorRun, 32, 35, 8).repeats();
 
 //// VILLAGER
 pub const VILLAGER_ANIMATION_IDLE: AnimationConfig =
-    AnimationConfig::new(ANIMATIONS::VillagerIdle, 0, 0, 8).repeats();
+    AnimationConfig::new(ANIMATIONS::VillagerIdle, 0, 3, 8).repeats();
+pub const VILLAGER_ANIMATION_WALK: AnimationConfig =
+    AnimationConfig::new(ANIMATIONS::VillagerWalk, 16, 19, 8).repeats();
+pub const VILLAGER_ANIMATION_FLEE: AnimationConfig =
+    AnimationConfig::new(ANIMATIONS::VillagerFlee, 16, 19, 8).repeats();
 pub const VILLAGER_ANIMATION_DEATH: AnimationConfig =
-    AnimationConfig::new(ANIMATIONS::VillagerDeath, 0, 0, 8);
+    AnimationConfig::new(ANIMATIONS::VillagerDeath, 64, 67, 8);
 
 /// NOISE MAKER
 pub const NOISE_MAKER_ANIMATION: AnimationConfig =
