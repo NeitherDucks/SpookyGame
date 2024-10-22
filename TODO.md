@@ -8,7 +8,6 @@ TO ADD:
     - Quit button in Win / Lose / Pause Menu if Web
 
 TO FIX:
-    - Interaction disapears
 
 POLISH:
     - Different types of NoiseMaker

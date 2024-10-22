@@ -150,7 +150,7 @@ pub fn talk_to_investigator_to_running_away(
                 .translation
                 .xy()
                 .distance(entity_transform.translation.xy())
-                <= INTERACTION_DISTANCE
+                <= INTERACTION_DISTANCE * 1.5
             {
                 commands.entity(talk.investigator).remove::<Idle>();
                 commands.entity(talk.investigator).remove::<Investigate>();

@@ -51,6 +51,7 @@ impl Default for Aim {
 #[derive(Clone, Bundle, LdtkIntCell)]
 pub struct ColliderBundle {
     pub collider: Collider,
+    pub collision_group: CollisionGroups,
     pub rigid_body: RigidBody,
     pub velocity: Velocity,
     pub rotation_constraints: LockedAxes,
@@ -63,6 +64,7 @@ impl Default for ColliderBundle {
     fn default() -> Self {
         ColliderBundle {
             collider: Collider::cuboid(8., 8.),
+            collision_group: CollisionGroups::new(Group::GROUP_1, Group::GROUP_1),
             rigid_body: RigidBody::Fixed,
             friction: Friction {
                 coefficient: 0.0,

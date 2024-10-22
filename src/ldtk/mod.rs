@@ -13,6 +13,7 @@ pub mod entities;
 
 use crate::{
     ai::Chased,
+    player_controller::PlayerIsHidding,
     rendering::{HEIGHT_LAYERS, NORMALS_LAYERS},
     utils::remap_rand_f32,
 };
@@ -173,7 +174,7 @@ pub fn interaction_events(
     mut collision_events: EventReader<CollisionEvent>,
     mut player: Query<
         (Entity, Option<&mut InteractionPossible>),
-        (With<PlayerTag>, Without<Chased>),
+        (With<PlayerTag>, Without<Chased>, Without<PlayerIsHidding>),
     >,
     interactibles: Query<(&InteractibleTag, &InteractibleEntityRef)>,
     spacebar_sprite_handle: Res<SpaceBarSpriteHandle>,

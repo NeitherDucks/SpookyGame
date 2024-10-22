@@ -184,14 +184,15 @@ fn spacebar_pressed(
 
     // If already hidding
     if let Some(hidding) = player_hidding {
-        // Get exit position
         // Move player to exit
         // IMPROVEME: Tweening between positions
-        player_transform.translation = hidding.0.extend(12.);
-        // Change collision to Fixed and remove PlayerIsHidding tag.
+        // Needs to set Z to 0 (instead of the actual 12) otherwise Rapier moves it up for whatever reason.
+        player_transform.translation = hidding.0.extend(0.);
+
+        // Enable back collision (not sure it's actually doing something) and remove PlayerIsHidding tag.
         commands
             .entity(player)
-            .insert(RigidBody::Fixed)
+            .insert(CollisionGroups::new(Group::GROUP_1, Group::GROUP_1))
             .insert(new_animation(PLAYER_ANIMATION_IDLE))
             .remove::<PlayerIsHidding>();
     } else {
@@ -209,16 +210,17 @@ fn spacebar_pressed(
                     return;
                 };
 
-                // Change player collision to KinematicPosition, so it stops colliding and add PlayerIsHidding tag.
+                // Disable collisions (not sure it's actually doing something), so it won't collide with the hidding spot and add PlayerIsHidding tag.
                 commands
                     .entity(player)
-                    .insert(RigidBody::KinematicPositionBased)
+                    .insert(CollisionGroups::new(Group::GROUP_2, Group::GROUP_2))
                     .insert(PlayerIsHidding(exit_location.0))
                     .insert(new_animation(PLAYER_ANIMATION_HIDDING));
 
                 // Move player to hidding spot
                 // IMPROVEME: Tweening between positions
-                player_transform.translation = hidding_spot_transform.translation.with_z(12.);
+                // Needs to set Z to 0 (instead of the actual 12) otherwise Rapier moves it up for whatever reason.
+                player_transform.translation = hidding_spot_transform.translation.with_z(0.);
             }
             InteractibleTag::NoiseMaker => {
                 // If we can get the linked noise maker from the interaction.
@@ -264,6 +266,8 @@ fn spacebar_pressed(
                 commands
                     .entity(player)
                     .insert(new_animation(PLAYER_ANIMATION_ATTACK));
+
+                commands.entity(player).remove::<InteractionPossible>();
             }
             InteractibleTag::Villager => {
                 // Set dead state (this also handle animation and cleanup).
@@ -273,6 +277,8 @@ fn spacebar_pressed(
                 commands
                     .entity(player)
                     .insert(new_animation(PLAYER_ANIMATION_ATTACK));
+
+                commands.entity(player).remove::<InteractionPossible>();
             }
         }
     }
