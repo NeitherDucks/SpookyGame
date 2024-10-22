@@ -14,7 +14,7 @@ use crate::{
         },
         DeadPlayerSpriteHandle,
     },
-    rendering::{Cameras, InGameCamera},
+    rendering::Cameras,
     states::{GameState, PlayingState},
 };
 
@@ -135,6 +135,7 @@ fn player_died(
             if score.player_lives == 0 {
                 // If no more lives, trigger lose condition.
                 next_state.set(PlayingState::Lose);
+                println!("No more lives.");
             } else {
                 // Otherwise, respawn the player.
                 next_state.set(PlayingState::Respawning);
@@ -145,31 +146,44 @@ fn player_died(
 
 fn player_respawn(
     mut commands: Commands,
-    mut player: Query<(Entity, &mut Transform, &mut Visibility), With<PlayerTag>>,
-    camera: Query<Entity, With<InGameCamera>>,
-    respawn_points: Query<(Entity, &Transform), (With<PlayerRespawnPointTag>, Without<PlayerTag>)>,
+    mut player: Query<
+        (Entity, &mut Transform, &mut Visibility),
+        (With<PlayerTag>, Without<Cameras>),
+    >,
+    mut camera: Query<(Entity, &mut Transform), With<Cameras>>,
+    respawn_points: Query<
+        (Entity, &Transform),
+        (
+            With<PlayerRespawnPointTag>,
+            (Without<PlayerTag>, Without<Cameras>),
+        ),
+    >,
     dead_player_handle: Res<DeadPlayerSpriteHandle>,
     mut next_state: ResMut<NextState<PlayingState>>,
 ) {
     // Just in case we can't find what we need, trigger lose condition.
-    let Ok((respawn_entity, respawn_transform)) = respawn_points.get_single() else {
+    let Some((respawn_entity, respawn_transform)) = respawn_points.iter().last() else {
         next_state.set(PlayingState::Lose);
+        warn!("Could not get respawn points");
         return;
     };
 
     let Ok((player, mut player_transform, mut visibility)) = player.get_single_mut() else {
         next_state.set(PlayingState::Lose);
+        warn!("Could not get player");
         return;
     };
 
-    let Ok(camera) = camera.get_single() else {
+    let Ok((camera, mut camera_transfrom)) = camera.get_single_mut() else {
         next_state.set(PlayingState::Lose);
+        warn!("Could not get camera group");
         return;
     };
 
     // Spawn dead "player", so it's visible later
     commands.spawn(DeadPlayerBundle::new(
-        &Transform::from_translation(player_transform.translation.with_z(2.)),
+        &Transform::from_rotation(player_transform.rotation)
+            .with_translation(player_transform.translation.with_z(11.)),
         dead_player_handle.0.clone(),
     ));
 
@@ -178,6 +192,9 @@ fn player_respawn(
 
     // Detach camera
     commands.entity(player).remove_children(&[camera]);
+
+    // Reset camera transforms
+    *camera_transfrom = Transform::IDENTITY;
 
     // Remove chased tag
     commands.entity(player).remove::<Chased>();
