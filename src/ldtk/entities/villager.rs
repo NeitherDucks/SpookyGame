@@ -1,7 +1,8 @@
 pub use bevy::{prelude::*, render::view::RenderLayers};
 pub use bevy_ecs_ldtk::prelude::*;
+use bevy_rand::prelude::{GlobalEntropy, WyRand};
+use rand_core::RngCore;
 
-use crate::game_mode::Score;
 pub use crate::{
     config::*,
     ldtk::{
@@ -10,6 +11,7 @@ pub use crate::{
     },
     rendering::PIXEL_PERFECT_LAYERS,
 };
+use crate::{game_mode::Score, ldtk::VillagerSpritesheetHandles, utils::remap_rand_f32};
 
 use super::{Aim, EnemyTag};
 
@@ -48,10 +50,19 @@ pub fn villager_added(
     mut commands: Commands,
     query: Query<(Entity, &EnemyTag), Added<EnemyTag>>,
     mut score: ResMut<Score>,
+    villagers_handles: Res<VillagerSpritesheetHandles>,
+    mut rng: ResMut<GlobalEntropy<WyRand>>,
 ) {
     for (entity, tag) in &query {
         if *tag != EnemyTag::Villager {
             continue;
+        }
+
+        // Randomize Villager spritesheet
+        let index: usize =
+            remap_rand_f32(rng.next_u32(), 0., villagers_handles.0.len() as f32 - 1.) as usize;
+        if let Some(handle) = villagers_handles.0.get(index) {
+            commands.entity(entity).insert(handle.clone());
         }
 
         score.villager_spawned();

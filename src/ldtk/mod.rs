@@ -41,6 +41,9 @@ pub struct SpaceBarSpriteHandle(Handle<Image>);
 #[derive(Resource)]
 pub struct DeadPlayerSpriteHandle(pub Handle<Image>);
 
+#[derive(Resource)]
+pub struct VillagerSpritesheetHandles(pub Vec<Handle<Image>>);
+
 #[derive(Component)]
 pub struct AnimatedLdtkLayer;
 
@@ -117,6 +120,18 @@ fn setup(
     let ldtk_file: Handle<LdtkProject> = asset_server.load("ldtk/spooky_game.ldtk");
     let spacebar_sprite: Handle<Image> = asset_server.load("2d/space_bar.png");
     let deadplayer_sprite: Handle<Image> = asset_server.load("2d/dead_player.png");
+
+    let mut villager_handles: Vec<Handle<Image>> = Vec::new();
+    let villager_names = vec![
+        "Artun", "Grym", "Hana", "Hark", "Janik", "Julz", "Khali", "Meza", "Nel", "Nyro", "Reza",
+        "Serek", "Seza", "Vash",
+    ];
+
+    for name in villager_names {
+        villager_handles.push(asset_server.load(format!("2d/villagers/{}.png", name)));
+    }
+
+    commands.insert_resource(VillagerSpritesheetHandles(villager_handles));
 
     commands.spawn(LdtkWorldBundle {
         ldtk_handle: ldtk_file.clone(),
