@@ -6,7 +6,10 @@ use crate::states::{GameState, PlayingState};
 mod lose_menu;
 mod main_menu;
 mod pause_menu;
+mod ui;
 mod win_menu;
+
+pub use ui::{PlayerLivesUiTag, VillagerKilledUiTag, VillagerTotalUiTag};
 
 #[derive(Component)]
 enum ButtonTag {
@@ -42,6 +45,7 @@ impl Plugin for MenusPlugin {
         .add_systems(OnExit(PlayingState::Pause), pause_menu::cleanup)
         .add_systems(OnEnter(PlayingState::Win), win_menu::setup)
         .add_systems(OnExit(PlayingState::Win), win_menu::cleanup)
+        .add_systems(OnEnter(GameState::Playing), ui::setup)
         .add_systems(
             Update,
             (
@@ -67,17 +71,19 @@ fn setup(
     mut loading: ResMut<AssetsLoading>,
 ) {
     let buttons = vec![
-        ("play", 32, 17),
-        ("quit", 29, 17),
-        ("restart", 50, 17),
-        ("resume", 50, 17),
+        ("play", "_button", 32, 17, 3),
+        ("quit", "_button", 29, 17, 3),
+        ("restart", "_button", 50, 17, 3),
+        ("resume", "_button", 50, 17, 3),
+        ("numbers", "", 8, 10, 11),
+        ("others", "", 16, 17, 2),
     ];
 
     let mut store: HashMap<String, UiElementHandles> = HashMap::new();
 
-    for (name, width, height) in buttons {
-        let image_handle: Handle<Image> = asset_server.load(format!("ui/{}_button.png", name));
-        let texture = TextureAtlasLayout::from_grid(UVec2::new(width, height), 3, 1, None, None);
+    for (name, second, width, height, cols) in buttons {
+        let image_handle: Handle<Image> = asset_server.load(format!("ui/{}{}.png", name, second));
+        let texture = TextureAtlasLayout::from_grid(UVec2::new(width, height), cols, 1, None, None);
         let texture_handle = texture_atlases.add(texture);
         loading.add(&image_handle);
 
@@ -117,13 +123,15 @@ fn button_interaction(
             };
 
             match *interaction {
+                Interaction::Pressed => {
+                    atlas.index = 2;
+                }
                 Interaction::Hovered => {
                     atlas.index = 1;
                 }
                 Interaction::None => {
                     atlas.index = 0;
                 }
-                _ => {}
             }
         }
     }

@@ -14,6 +14,7 @@ use crate::{
         },
         DeadPlayerSpriteHandle,
     },
+    menus::{PlayerLivesUiTag, VillagerKilledUiTag, VillagerTotalUiTag},
     rendering::Cameras,
     states::{GameState, PlayingState},
 };
@@ -66,7 +67,7 @@ impl Plugin for GamePlugin {
             )
             .add_systems(
                 Update,
-                check_win_condition.run_if(in_state(PlayingState::Playing)),
+                (check_win_condition, update_ui).run_if(in_state(PlayingState::Playing)),
             )
             .add_systems(Update, player_died.run_if(in_state(PlayingState::Death)))
             .add_systems(Update, log_transitions::<PlayingState>);
@@ -105,13 +106,60 @@ fn check_win_condition(score: Res<Score>, mut next_state: ResMut<NextState<Playi
     }
 }
 
+fn update_ui(
+    score: Res<Score>,
+    mut villagers_killed: Query<
+        &mut TextureAtlas,
+        (
+            Without<VillagerTotalUiTag>,
+            With<VillagerKilledUiTag>,
+            Without<PlayerLivesUiTag>,
+        ),
+    >,
+    mut villagers_total: Query<
+        &mut TextureAtlas,
+        (
+            With<VillagerTotalUiTag>,
+            Without<VillagerKilledUiTag>,
+            Without<PlayerLivesUiTag>,
+        ),
+    >,
+    mut player_lives: Query<
+        &mut TextureAtlas,
+        (
+            Without<VillagerTotalUiTag>,
+            Without<VillagerKilledUiTag>,
+            With<PlayerLivesUiTag>,
+        ),
+    >,
+) {
+    if !score.is_changed() {
+        return;
+    }
+
+    if let Ok(mut villagers_killed) = villagers_killed.get_single_mut() {
+        villagers_killed.index = score.villagers_killed as usize;
+    }
+    if let Ok(mut villagers_total) = villagers_total.get_single_mut() {
+        villagers_total.index = score.total_villagers as usize;
+    }
+    if let Ok(mut player_lives) = player_lives.get_single_mut() {
+        player_lives.index = score.player_lives as usize;
+    }
+}
+
 fn player_death(
     mut commands: Commands,
     mut player: Query<Entity, With<PlayerTag>>,
     mut score: ResMut<Score>,
     mut next_state: ResMut<NextState<PlayingState>>,
+    mut ui: Query<&mut TextureAtlas, With<PlayerLivesUiTag>>,
 ) {
     score.player_lives -= 1;
+
+    if let Ok(mut ui) = ui.get_single_mut() {
+        ui.index -= 1;
+    }
 
     let Ok(player) = player.get_single_mut() else {
         next_state.set(PlayingState::Lose);
