@@ -4,6 +4,7 @@ TO ADD:
     - Sounds
     - Music
     - Lighting!
+    - Rain and Lighnting?
 
 TO FIX:
 

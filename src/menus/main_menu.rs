@@ -7,13 +7,7 @@ use super::{ButtonTag, UiElementsHandles};
 #[derive(Component)]
 pub struct MainMenuTag;
 
-pub fn setup(mut commands: Commands, buttons_images: Res<UiElementsHandles>) {
-    let style = Style {
-        width: Val::Px(32. * 6.),
-        height: Val::Px(17. * 6.),
-        ..default()
-    };
-
+pub fn setup(mut commands: Commands, ui_elements: Res<UiElementsHandles>) {
     commands
         .spawn((
             NodeBundle {
@@ -31,10 +25,26 @@ pub fn setup(mut commands: Commands, buttons_images: Res<UiElementsHandles>) {
             PIXEL_PERFECT_LAYERS,
         ))
         .with_children(|parent| {
+            parent.spawn(ImageBundle {
+                style: Style {
+                    width: Val::Px(121. * 4.),
+                    height: Val::Px(70. * 4.),
+                    margin: UiRect::bottom(Val::Px(100.0)),
+                    ..default()
+                },
+                image: UiImage::new(ui_elements.0.get("title").unwrap().image.clone()),
+                ..default()
+            });
+
             parent
                 .spawn((
                     ButtonBundle {
-                        style: style.clone(),
+                        style: Style {
+                            width: Val::Px(32. * 6.),
+                            height: Val::Px(17. * 6.),
+                            margin: UiRect::bottom(Val::Px(10.0)),
+                            ..default()
+                        },
                         ..default()
                     },
                     ButtonTag::Play,
@@ -42,14 +52,16 @@ pub fn setup(mut commands: Commands, buttons_images: Res<UiElementsHandles>) {
                 .with_children(|parent| {
                     parent.spawn((
                         ImageBundle {
-                            style,
-                            image: UiImage::new(
-                                buttons_images.0.get("play").unwrap().image.clone(),
-                            ),
+                            style: Style {
+                                width: Val::Px(32. * 6.),
+                                height: Val::Px(17. * 6.),
+                                ..default()
+                            },
+                            image: UiImage::new(ui_elements.0.get("play").unwrap().image.clone()),
                             ..default()
                         },
                         TextureAtlas::from(
-                            buttons_images.0.get("play").unwrap().atlas.clone().unwrap(),
+                            ui_elements.0.get("play").unwrap().atlas.clone().unwrap(),
                         ),
                     ));
                 });
@@ -77,13 +89,11 @@ pub fn setup(mut commands: Commands, buttons_images: Res<UiElementsHandles>) {
                     parent.spawn((
                         ImageBundle {
                             style,
-                            image: UiImage::new(
-                                buttons_images.0.get("quit").unwrap().image.clone(),
-                            ),
+                            image: UiImage::new(ui_elements.0.get("quit").unwrap().image.clone()),
                             ..default()
                         },
                         TextureAtlas::from(
-                            buttons_images.0.get("quit").unwrap().atlas.clone().unwrap(),
+                            ui_elements.0.get("quit").unwrap().atlas.clone().unwrap(),
                         ),
                     ));
                 });

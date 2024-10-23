@@ -29,6 +29,7 @@ pub fn setup(mut commands: Commands, ui_elements: Res<UiElementsHandles>) {
                 style: Style {
                     width: Val::Px(41. * 10.),
                     height: Val::Px(10. * 10.),
+                    margin: UiRect::bottom(Val::Px(100.0)),
                     ..default()
                 },
                 image: UiImage::new(ui_elements.0.get("failed").unwrap().image.clone()),

@@ -30,6 +30,7 @@ pub fn setup(mut commands: Commands, ui_elements: Res<UiElementsHandles>) {
                 style: Style {
                     width: Val::Px(41. * 10.),
                     height: Val::Px(10. * 10.),
+                    margin: UiRect::bottom(Val::Px(100.0)),
                     ..default()
                 },
                 image: UiImage::new(ui_elements.0.get("paused").unwrap().image.clone()),
@@ -45,7 +46,12 @@ pub fn setup(mut commands: Commands, ui_elements: Res<UiElementsHandles>) {
             parent
                 .spawn((
                     ButtonBundle {
-                        style: style.clone(),
+                        style: Style {
+                            width: Val::Px(51. * 6.),
+                            height: Val::Px(17. * 6.),
+                            margin: UiRect::bottom(Val::Px(20.0)),
+                            ..default()
+                        },
                         ..default()
                     },
                     ButtonTag::Resume,
