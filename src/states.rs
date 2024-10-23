@@ -5,6 +5,7 @@ use bevy::prelude::*;
 #[allow(dead_code)]
 pub enum GameState {
     #[default]
+    Loading,
     MainMenu,
     Playing,
     Reset,
