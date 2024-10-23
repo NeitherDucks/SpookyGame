@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::{Collider, RigidBody};
 
 use crate::{
     game_mode::Score,
@@ -35,7 +36,9 @@ pub fn dead_on_enter(
             .remove::<Idle>()
             .remove::<Wander>()
             .remove::<RunAway>()
-            .remove::<TalkToInvestigator>();
+            .remove::<TalkToInvestigator>()
+            .remove::<Collider>()
+            .remove::<RigidBody>();
 
         // Remove any interaction prompt or interaction sensors.
         commands.entity(entity).despawn_descendants();
