@@ -11,7 +11,12 @@ pub use crate::{
     },
     rendering::PIXEL_PERFECT_LAYERS,
 };
-use crate::{game_mode::Score, ldtk::VillagerSpritesheetHandles, utils::remap_rand_f32};
+use crate::{
+    game_mode::Score,
+    ldtk::{EnemyLights, Light, VillagerSpritesheetHandles},
+    rendering::LIGHTS_LAYERS,
+    utils::remap_rand_f32,
+};
 
 use super::{Aim, EnemyTag};
 
@@ -51,6 +56,7 @@ pub fn villager_added(
     query: Query<(Entity, &EnemyTag), Added<EnemyTag>>,
     mut score: ResMut<Score>,
     villagers_handles: Res<VillagerSpritesheetHandles>,
+    lights: Res<EnemyLights>,
     mut rng: ResMut<GlobalEntropy<WyRand>>,
 ) {
     for (entity, tag) in &query {
@@ -64,6 +70,25 @@ pub fn villager_added(
         if let Some(handle) = villagers_handles.0.get(index) {
             commands.entity(entity).insert(handle.clone());
         }
+
+        // Add light
+        let light = commands
+            .spawn((
+                SpriteBundle {
+                    texture: lights.villager_light.clone(),
+                    transform: Transform::from_translation(Vec3::new(48., 0., 0.)),
+                    ..Default::default()
+                },
+                TextureAtlas {
+                    layout: lights.atlas.clone(),
+                    index: remap_rand_f32(rng.next_u32(), 0., 4.) as usize,
+                },
+                Light,
+                LIGHTS_LAYERS,
+            ))
+            .id();
+
+        commands.entity(entity).add_child(light);
 
         score.villager_spawned();
 

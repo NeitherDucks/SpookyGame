@@ -12,10 +12,7 @@ pub mod animation;
 pub mod entities;
 
 use crate::{
-    ai::Chased,
-    player_controller::PlayerIsHidding,
-    rendering::{HEIGHT_LAYERS, NORMALS_LAYERS},
-    utils::remap_rand_f32,
+    ai::Chased, player_controller::PlayerIsHidding, rendering::HEIGHT_LAYERS, utils::remap_rand_f32,
 };
 use bevy_ecs_ldtk::{
     app::{LdtkEntityAppExt, LdtkIntCellAppExt},
@@ -56,6 +53,17 @@ pub struct ConstantAnimatedLdtkLayer;
 #[derive(Resource, Reflect)]
 pub struct ConstantAnimatedLdtkLayerTimer(pub Timer);
 
+#[derive(Resource)]
+pub struct EnemyLights {
+    investigator_light: Handle<Image>,
+    villager_light: Handle<Image>,
+    atlas: Handle<TextureAtlasLayout>,
+    timer: Timer,
+}
+
+#[derive(Component)]
+pub struct Light;
+
 pub struct MyLdtkPlugin;
 
 impl Plugin for MyLdtkPlugin {
@@ -94,12 +102,14 @@ impl Plugin for MyLdtkPlugin {
                 update_grid_coords,
                 interaction_events,
                 noise_maker_trigger_removed,
+                investigator_added,
                 villager_added,
                 on_respawn_point_added,
                 animation_changed,
                 modify_ldtk_layers,
                 update_layer_animations,
                 update_layer_animations_constant,
+                update_lights_animation,
             )
                 .run_if(in_state(PlayingState::Playing)),
         )
@@ -115,6 +125,7 @@ impl Plugin for MyLdtkPlugin {
 fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
     mut loading: ResMut<AssetsLoading>,
 ) {
     let ldtk_file: Handle<LdtkProject> = asset_server.load("ldtk/spooky_game.ldtk");
@@ -154,6 +165,22 @@ fn setup(
         1. / 8., // 8 fps
         TimerMode::Repeating,
     )));
+
+    let investigator_light_handle: Handle<Image> = asset_server.load("2d/light_investigator.png");
+    let villager_light_handle: Handle<Image> = asset_server.load("2d/light_villager.png");
+
+    let atlas = TextureAtlasLayout::from_grid(UVec2::new(112, 192), 5, 1, None, None);
+    let atlas_handle = texture_atlases.add(atlas);
+
+    loading.add(&investigator_light_handle);
+    loading.add(&villager_light_handle);
+
+    commands.insert_resource(EnemyLights {
+        atlas: atlas_handle,
+        investigator_light: investigator_light_handle,
+        villager_light: villager_light_handle,
+        timer: Timer::from_seconds(0.25, TimerMode::Repeating),
+    });
 }
 
 fn cleanup(mut commands: Commands, ldtk_world: Query<Entity, With<Handle<LdtkProject>>>) {
@@ -277,9 +304,6 @@ fn modify_ldtk_layers(
 ) {
     for (entity, layer, mut visibility) in &mut query {
         match layer.identifier.as_str() {
-            "NORMALS" => {
-                commands.entity(entity).insert(NORMALS_LAYERS);
-            }
             "HEIGHT" => {
                 commands.entity(entity).insert(HEIGHT_LAYERS);
             }
@@ -347,6 +371,20 @@ fn update_layer_animations_constant(
                     index.0 = (x + 1).rem_euclid(4) + (y * 4);
                 }
             }
+        }
+    }
+}
+
+fn update_lights_animation(
+    mut lights: Query<&mut TextureAtlas, With<Light>>,
+    mut timer: ResMut<EnemyLights>,
+    time: Res<Time>,
+) {
+    timer.timer.tick(time.delta());
+
+    if timer.timer.finished() {
+        for mut light in &mut lights {
+            light.index = light.index.rem_euclid(5);
         }
     }
 }

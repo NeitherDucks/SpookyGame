@@ -26,7 +26,10 @@ use wander::*;
 
 use crate::{
     config::*,
-    ldtk::entities::{Aim, AnimationConfig},
+    ldtk::{
+        entities::{Aim, AnimationConfig},
+        Light,
+    },
     pathfinding::Path,
     states::PlayingState,
 };
@@ -147,19 +150,38 @@ fn follow_path(
     }
 }
 
-fn update_animation_aim(mut query: Query<(&mut AnimationConfig, &Aim), Changed<Aim>>) {
-    for (mut animation, aim) in &mut query {
+fn update_animation_aim(
+    mut query: Query<(&Children, &mut AnimationConfig, &Aim), Changed<Aim>>,
+    mut lights: Query<&mut Transform, With<Light>>,
+) {
+    for (children, mut animation, aim) in &mut query {
+        let mut angle: f32 = 0.;
+        let mut offset: Vec2 = Vec2::new(48., 0.);
+
         if aim.0.x.abs() > aim.0.y.abs() {
             if aim.0.x > 0. {
                 animation.set_offset_animation(0);
             } else {
                 animation.set_offset_animation(1);
+                angle = 180.;
+                offset = Vec2::new(-48., 0.);
             }
         } else {
             if aim.0.y > 0. {
                 animation.set_offset_animation(3);
+                angle = 90.;
+                offset = Vec2::new(0., 48.);
             } else {
                 animation.set_offset_animation(2);
+                angle = -90.;
+                offset = Vec2::new(0., -48.);
+            }
+        }
+
+        for child in children {
+            if let Ok(mut light) = lights.get_mut(*child) {
+                light.rotation = Quat::from_euler(EulerRot::XYZ, 0., 0., angle.to_radians());
+                light.translation = offset.extend(0.);
             }
         }
     }

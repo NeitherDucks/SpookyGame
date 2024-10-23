@@ -219,7 +219,7 @@ fn spacebar_pressed(
 
                 // Move player to hidding spot
                 // IMPROVEME: Tweening between positions
-                // Needs to set Z to 0 (instead of the actual 12) otherwise Rapier moves it up for whatever reason.
+                // Needs to set Z to 0 since it's relative to it's ldtk layer.
                 player_transform.translation = hidding_spot_transform.translation.with_z(0.);
             }
             InteractibleTag::NoiseMaker => {
