@@ -4,7 +4,7 @@ use bevy_ecs_ldtk::GridCoords;
 use crate::{
     config::RUNNING_SPEED,
     grid::{Grid, Tile},
-    ldtk::{animation::new_animation, entities::AnimationConfig},
+    ldtk::animation::new_animation,
     pathfinding::Path,
 };
 
@@ -19,13 +19,13 @@ pub struct TalkToInvestigator {
 
 pub fn talk_to_investigator_on_enter(
     mut commands: Commands,
-    query: Query<(Entity, &AnimationConfig), Added<TalkToInvestigator>>,
+    query: Query<Entity, Added<TalkToInvestigator>>,
 ) {
-    for (entity, animation) in &query {
+    for entity in &query {
         commands.entity(entity).insert(MovementSpeed(RUNNING_SPEED));
-        commands.entity(entity).insert(new_animation(
-            VILLAGER_ANIMATION_FLEE.with_offset(animation.get_offset()),
-        ));
+        commands
+            .entity(entity)
+            .insert(new_animation(VILLAGER_ANIMATION_FLEE));
     }
 }
 

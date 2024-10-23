@@ -4,11 +4,11 @@
 use std::collections::VecDeque;
 
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{utils::grid_coords_to_translation, GridCoords};
+use bevy_ecs_ldtk::GridCoords;
 use pathfinding::prelude::astar;
 
 use crate::{
-    config::{GRID_SIZE, TILE_SIZE},
+    config::GRID_SIZE,
     grid::{Grid, GridLocation},
 };
 
@@ -78,19 +78,4 @@ pub fn neumann_neighbors<T>(grid: &Grid<T>, location: &GridCoords) -> Vec<GridCo
         }
     }
     sucessors
-}
-
-pub fn pathfinding_gizmos(mut gizmos: Gizmos, query: Query<&Path>) {
-    for path in &query {
-        for step in &path.steps {
-            let location = grid_coords_to_translation(*step, TILE_SIZE);
-
-            gizmos.rect_2d(
-                location,
-                0.,
-                Vec2::new(TILE_SIZE.x as f32, TILE_SIZE.y as f32),
-                Color::srgb(1., 0., 0.),
-            );
-        }
-    }
 }

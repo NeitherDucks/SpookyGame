@@ -1,5 +1,6 @@
 use animation::{
-    animation_changed, update_animations, update_animations_during_death, AnimationFinishedEvent,
+    animation_changed, animation_offset_changed, update_animations, update_animations_during_death,
+    AnimationFinishedEvent,
 };
 use bevy::prelude::*;
 use bevy_ecs_tilemap::tiles::TileTextureIndex;
@@ -106,6 +107,7 @@ impl Plugin for MyLdtkPlugin {
                 villager_added,
                 on_respawn_point_added,
                 animation_changed,
+                animation_offset_changed,
                 modify_ldtk_layers,
                 update_layer_animations,
                 update_layer_animations_constant,

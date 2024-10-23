@@ -17,14 +17,12 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rand::plugin::EntropyPlugin;
 use bevy_rand::prelude::WyRand;
 use bevy_rapier2d::plugin::{NoUserData, RapierConfiguration, RapierPhysicsPlugin, TimestepMode};
-// use bevy_rapier2d::render::RapierDebugRenderPlugin;
 
 use config::PIXEL_PER_TILE;
 use game_mode::GamePlugin;
 use grid::{GridPlugin, Tile};
 use ldtk::MyLdtkPlugin;
 use menus::MenusPlugin;
-use pathfinding::pathfinding_gizmos;
 use player_controller::PlayerPlugin;
 use rendering::RenderingPlugin;
 use states::GameState;
@@ -33,7 +31,6 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins.set(ImagePlugin::default_nearest()),
-            // RapierDebugRenderPlugin::default(), // for debug
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(PIXEL_PER_TILE),
             WorldInspectorPlugin::new(), // for debug
             EntropyPlugin::<WyRand>::default(),
@@ -59,6 +56,5 @@ fn main() {
         })
         .init_state::<GameState>()
         .add_systems(Update, log_transitions::<GameState>)
-        .add_systems(Update, pathfinding_gizmos)
         .run();
 }

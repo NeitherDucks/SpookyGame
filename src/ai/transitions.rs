@@ -48,7 +48,6 @@ pub fn notice_player(
         AnyOf<(&Idle, &Investigate, &Wander)>,
     )>,
     rapier_context: Res<RapierContext>,
-    mut gizmos: Gizmos,
 ) {
     if let Ok((player, player_coords, player_transform)) = player.get_single() {
         for (entity, entity_transform, aim, tag, _) in &query {
@@ -75,7 +74,6 @@ pub fn notice_player(
                 distance_threshold,
                 angle_threshold,
                 &rapier_context,
-                &mut gizmos,
             );
 
             if result {
@@ -229,7 +227,6 @@ pub fn chasing_to_investigating(
     player: Query<(Entity, &GridCoords, &Transform, Option<&PlayerIsHidding>), With<PlayerTag>>,
     query: Query<(Entity, &Transform, &Aim), With<Chase>>,
     rapier_context: Res<RapierContext>,
-    mut gizmos: Gizmos,
 ) {
     for (entity, entity_transform, aim) in &query {
         let Ok((player, target_coords, target_transform, hidding)) = player.get_single() else {
@@ -250,7 +247,6 @@ pub fn chasing_to_investigating(
                 INVESTIGATOR_VIEW_RANGE * 1.3,
                 INVESTIGATOR_VIEW_HALF_ANGLE,
                 &rapier_context,
-                &mut gizmos,
             );
 
         // If still visible, update last seen coordinates, otherwise, swtich to Investigate.

@@ -3,10 +3,7 @@ use bevy_rapier2d::prelude::{Collider, RigidBody};
 
 use crate::{
     game_mode::Score,
-    ldtk::{
-        animation::new_animation,
-        entities::{AnimationConfig, EnemyTag},
-    },
+    ldtk::{animation::new_animation, entities::EnemyTag},
 };
 
 use super::{Idle, RunAway, TalkToInvestigator, Wander, VILLAGER_ANIMATION_DEATH};
@@ -18,10 +15,10 @@ pub struct Dead;
 
 pub fn dead_on_enter(
     mut commands: Commands,
-    query: Query<(Entity, &EnemyTag, &AnimationConfig), Added<Dead>>,
+    query: Query<(Entity, &EnemyTag), Added<Dead>>,
     mut score: ResMut<Score>,
 ) {
-    for (entity, tag, animation) in &query {
+    for (entity, tag) in &query {
         // Only villagers should have the Dead state.
         if *tag != EnemyTag::Villager {
             commands.entity(entity).remove::<Dead>();
@@ -44,8 +41,8 @@ pub fn dead_on_enter(
         commands.entity(entity).despawn_descendants();
 
         // Play death animation
-        commands.entity(entity).insert(new_animation(
-            VILLAGER_ANIMATION_DEATH.with_offset(animation.get_offset()),
-        ));
+        commands
+            .entity(entity)
+            .insert(new_animation(VILLAGER_ANIMATION_DEATH));
     }
 }

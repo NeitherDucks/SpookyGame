@@ -7,7 +7,7 @@ use bevy_rand::prelude::{GlobalEntropy, WyRand};
 use crate::{
     config::{INVESTIGATING_RADIUS, RUNNING_SPEED},
     grid::{Grid, Tile},
-    ldtk::{animation::new_animation, entities::AnimationConfig},
+    ldtk::animation::new_animation,
     pathfinding::Path,
 };
 
@@ -31,16 +31,13 @@ impl Default for Investigate {
     }
 }
 
-pub fn investigate_on_enter(
-    mut commands: Commands,
-    query: Query<(Entity, &AnimationConfig), Added<Investigate>>,
-) {
-    for (entity, animation) in &query {
+pub fn investigate_on_enter(mut commands: Commands, query: Query<Entity, Added<Investigate>>) {
+    for entity in &query {
         commands.entity(entity).insert(MovementSpeed(RUNNING_SPEED));
 
-        commands.entity(entity).insert(new_animation(
-            INVESTIGATOR_ANIMATION_RUN.with_offset(animation.get_offset()),
-        ));
+        commands
+            .entity(entity)
+            .insert(new_animation(INVESTIGATOR_ANIMATION_RUN));
     }
 }
 

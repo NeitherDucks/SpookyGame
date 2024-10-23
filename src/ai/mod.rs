@@ -26,10 +26,7 @@ use wander::*;
 
 use crate::{
     config::*,
-    ldtk::{
-        entities::{Aim, AnimationConfig},
-        Light,
-    },
+    ldtk::{animation::AnimationOffset, entities::Aim, Light},
     pathfinding::Path,
     states::PlayingState,
 };
@@ -151,7 +148,7 @@ fn follow_path(
 }
 
 fn update_animation_aim(
-    mut query: Query<(&Children, &mut AnimationConfig, &Aim), Changed<Aim>>,
+    mut query: Query<(&Children, &mut AnimationOffset, &Aim), Changed<Aim>>,
     mut lights: Query<&mut Transform, With<Light>>,
 ) {
     for (children, mut animation, aim) in &mut query {
@@ -160,19 +157,19 @@ fn update_animation_aim(
 
         if aim.0.x.abs() > aim.0.y.abs() {
             if aim.0.x > 0. {
-                animation.set_offset_animation(0);
+                animation.offset = 0;
             } else {
-                animation.set_offset_animation(1);
+                animation.offset = 1;
                 angle = 180.;
                 offset = Vec2::new(-48., 0.);
             }
         } else {
             if aim.0.y > 0. {
-                animation.set_offset_animation(3);
+                animation.offset = 3;
                 angle = 90.;
                 offset = Vec2::new(0., 48.);
             } else {
-                animation.set_offset_animation(2);
+                animation.offset = 2;
                 angle = -90.;
                 offset = Vec2::new(0., -48.);
             }

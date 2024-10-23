@@ -4,10 +4,7 @@ use bevy_ecs_ldtk::GridCoords;
 use crate::{
     config::CHASE_SPEED,
     grid::{Grid, Tile},
-    ldtk::{
-        animation::new_animation,
-        entities::{player::PlayerTag, AnimationConfig},
-    },
+    ldtk::{animation::new_animation, entities::player::PlayerTag},
     pathfinding::Path,
 };
 
@@ -24,15 +21,12 @@ pub struct Chase {
 #[derive(Component)]
 pub struct Chased;
 
-pub fn chase_on_enter(
-    mut commands: Commands,
-    query: Query<(Entity, &AnimationConfig), Added<Chase>>,
-) {
-    for (entity, animation) in &query {
+pub fn chase_on_enter(mut commands: Commands, query: Query<Entity, Added<Chase>>) {
+    for entity in &query {
         commands.entity(entity).insert(MovementSpeed(CHASE_SPEED));
-        commands.entity(entity).insert(new_animation(
-            INVESTIGATOR_ANIMATION_RUN.with_offset(animation.get_offset()),
-        ));
+        commands
+            .entity(entity)
+            .insert(new_animation(INVESTIGATOR_ANIMATION_RUN));
     }
 }
 

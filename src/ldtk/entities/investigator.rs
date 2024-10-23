@@ -12,7 +12,7 @@ pub use crate::{
     rendering::PIXEL_PERFECT_LAYERS,
 };
 use crate::{
-    ldtk::{EnemyLights, Light},
+    ldtk::{animation::AnimationOffset, EnemyLights, Light},
     rendering::LIGHTS_LAYERS,
     utils::remap_rand_f32,
 };
@@ -23,6 +23,7 @@ use super::{Aim, EnemyTag};
 pub struct InvestigatorBundle {
     collider: ColliderBundle,
     animation: AnimationConfig,
+    animation_offset: AnimationOffset,
     animation_timer: AnimationTimer,
     tag: EnemyTag,
     render_layer: RenderLayers,
@@ -39,6 +40,7 @@ impl Default for InvestigatorBundle {
         InvestigatorBundle {
             collider: ColliderBundle::default(),
             animation: INVESTIGATOR_ANIMATION_IDLE,
+            animation_offset: AnimationOffset::default(),
             animation_timer: AnimationTimer::new(INVESTIGATOR_ANIMATION_IDLE),
             tag: EnemyTag::Investigator,
             render_layer: PIXEL_PERFECT_LAYERS,

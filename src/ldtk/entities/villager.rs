@@ -13,7 +13,7 @@ pub use crate::{
 };
 use crate::{
     game_mode::Score,
-    ldtk::{EnemyLights, Light, VillagerSpritesheetHandles},
+    ldtk::{animation::AnimationOffset, EnemyLights, Light, VillagerSpritesheetHandles},
     rendering::LIGHTS_LAYERS,
     utils::remap_rand_f32,
 };
@@ -24,6 +24,7 @@ use super::{Aim, EnemyTag};
 pub struct VillagerBundle {
     collider: ColliderBundle,
     animation: AnimationConfig,
+    animation_offset: AnimationOffset,
     animation_timer: AnimationTimer,
     tag: EnemyTag,
     render_layer: RenderLayers,
@@ -40,6 +41,7 @@ impl Default for VillagerBundle {
         VillagerBundle {
             collider: ColliderBundle::default(),
             animation: VILLAGER_ANIMATION_IDLE,
+            animation_offset: AnimationOffset::default(),
             animation_timer: AnimationTimer::new(VILLAGER_ANIMATION_IDLE),
             tag: EnemyTag::Villager,
             render_layer: PIXEL_PERFECT_LAYERS,

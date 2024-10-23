@@ -318,18 +318,9 @@ pub fn is_player_visible(
     max_distance: f32,
     max_angle: f32,
     rapier_context: &Res<RapierContext>,
-    gizmos: &mut Gizmos,
 ) -> bool {
     let max_angle = max_angle.to_radians();
     // Check if player is within range.
-    gizmos.arc_2d(
-        other_location,
-        other_aim.0.to_angle() - 90f32.to_radians(),
-        max_angle * 2.,
-        max_distance,
-        Color::srgb(1.0, 1.0, 1.0),
-    );
-
     if other_location.distance(player_location) < max_distance {
         let dir = (player_location - other_location).normalize();
 
@@ -340,20 +331,10 @@ pub fn is_player_visible(
                 .exclude_sensors()
                 .exclude_rigid_body(other);
 
-            gizmos.line_2d(other_location, player_location, Color::srgb(1.0, 1.0, 0.0));
-
             let result =
                 rapier_context.cast_ray(other_location, dir, max_distance + 8., true, filter);
 
-            if let Some((entity, rio)) = result {
-                let color = match entity == player {
-                    true => Color::srgb(1.0, 0.0, 1.0),
-                    false => Color::srgb(1.0, 1.0, 0.0),
-                };
-
-                let hit_pos = other_location + (dir * rio);
-                gizmos.circle_2d(hit_pos, 5.0, color);
-
+            if let Some((entity, _)) = result {
                 return entity == player;
             }
         }
