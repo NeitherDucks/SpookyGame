@@ -5,7 +5,6 @@ TO ADD:
     - Music
 
 TO FIX:
-    - Edge case where villager will delete it's children, and bugs out. (probably dies but don't? Might be a component not getting removed correctly, like Path).
 
 POLISH:
     - Different types of NoiseMaker

@@ -233,10 +233,6 @@ fn update_animation_internal_with_offset(
 
     // If it has been displayed for the user-defined amount of time (fps)...
     if timer.0.just_finished() {
-        println!(
-            "Update animation: {}, {}",
-            offset.actual, config.last_sprite_index
-        );
         if offset.actual == config.last_sprite_index {
             // ...and it IS the last frame
 

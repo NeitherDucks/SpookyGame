@@ -183,7 +183,6 @@ fn player_died(
             if score.player_lives == 0 {
                 // If no more lives, trigger lose condition.
                 next_state.set(PlayingState::Lose);
-                println!("No more lives.");
             } else {
                 // Otherwise, respawn the player.
                 next_state.set(PlayingState::Respawning);

@@ -220,6 +220,7 @@ pub fn interaction_events(
         (Entity, Option<&mut InteractionPossible>),
         (With<PlayerTag>, Without<Chased>, Without<PlayerIsHidding>),
     >,
+    interaction_button: Query<Entity, With<ShowInteractionButtonTag>>,
     interactibles: Query<(&InteractibleTag, &InteractibleEntityRef)>,
     spacebar_sprite_handle: Res<SpaceBarSpriteHandle>,
 ) {
@@ -275,7 +276,10 @@ pub fn interaction_events(
                     current_interaction.counter = counter as u32;
                 } else {
                     commands.entity(player).remove::<InteractionPossible>();
-                    commands.entity(entity).despawn_descendants();
+
+                    for button in &interaction_button {
+                        commands.entity(button).despawn_recursive();
+                    }
                 }
             }
         } else {
