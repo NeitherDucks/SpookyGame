@@ -3,11 +3,10 @@ TODO
 TO ADD:
     - Sounds
     - Music
-
+    - Gamepad support
 TO FIX:
 
 POLISH:
-    - Different types of NoiseMaker
     - Intro cut scene
 
     - Adjust config value!!

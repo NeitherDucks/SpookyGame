@@ -27,6 +27,16 @@ struct UiElementHandles {
 #[derive(Resource)]
 struct UiElementsHandles(HashMap<String, UiElementHandles>);
 
+#[derive(Component)]
+struct UiFocusOrder(i32);
+
+#[derive(Component, PartialEq, Eq)]
+enum UiFocus {
+    Pressed,
+    Focused,
+    None,
+}
+
 pub struct MenusPlugin;
 
 impl Plugin for MenusPlugin {
@@ -53,7 +63,7 @@ impl Plugin for MenusPlugin {
                 main_menu::button_system.run_if(in_state(GameState::MainMenu)),
                 pause_menu::button_system.run_if(in_state(PlayingState::Pause)),
                 win_menu::button_system.run_if(in_state(PlayingState::Win)),
-                button_interaction.run_if(
+                (button_interaction, change_focus, focus_press_button).run_if(
                     in_state(PlayingState::Lose)
                         .or_else(in_state(GameState::MainMenu))
                         .or_else(in_state(PlayingState::Pause))
@@ -113,25 +123,94 @@ fn setup(
 }
 
 fn button_interaction(
-    interaction_query: Query<(&Interaction, &Children), (Changed<Interaction>, With<Button>)>,
+    interaction_query: Query<
+        (&Interaction, &UiFocus, &Children),
+        (Or<(Changed<Interaction>, Changed<UiFocus>)>, With<Button>),
+    >,
     mut images: Query<&mut TextureAtlas>,
 ) {
-    for (interaction, children) in &interaction_query {
+    for (interaction, focus, children) in &interaction_query {
         for child in children {
             let Ok(mut atlas) = images.get_mut(*child) else {
                 continue;
             };
 
-            match *interaction {
-                Interaction::Pressed => {
-                    atlas.index = 2;
+            if *interaction == Interaction::Pressed || *focus == UiFocus::Pressed {
+                atlas.index = 2;
+            } else if *interaction == Interaction::Hovered || *focus == UiFocus::Focused {
+                atlas.index = 1;
+            } else {
+                atlas.index = 0;
+            }
+        }
+    }
+}
+
+fn change_focus(
+    mut buttons: Query<(&UiFocusOrder, &mut UiFocus), With<Button>>,
+    input: Res<ButtonInput<KeyCode>>,
+) {
+    let mut direction: Option<i32> = None;
+
+    if input.just_pressed(KeyCode::KeyS)
+        || input.just_pressed(KeyCode::ArrowDown)
+        || input.just_pressed(KeyCode::Tab)
+    {
+        direction = Some(1);
+    }
+
+    if input.just_pressed(KeyCode::KeyW) || input.just_pressed(KeyCode::ArrowUp) {
+        direction = Some(-1);
+    }
+
+    if let Some(direction) = direction {
+        // Find current focused item. Also get min/max index.
+        let mut current: Option<i32> = None;
+        let mut min_index: i32 = 0;
+        let mut max_index: i32 = 0;
+
+        for (order, focus) in &buttons {
+            if *focus == UiFocus::Focused {
+                current = Some(order.0);
+            }
+
+            min_index = min_index.min(order.0);
+            max_index = max_index.max(order.0);
+        }
+
+        // If none, set focus on item with index 0, else, set focus on next item, wrapping as needed.
+        let next_id = match current {
+            Some(current) => {
+                if current + direction > max_index {
+                    min_index
+                } else if current + direction < min_index {
+                    max_index
+                } else {
+                    current + direction
                 }
-                Interaction::Hovered => {
-                    atlas.index = 1;
-                }
-                Interaction::None => {
-                    atlas.index = 0;
-                }
+            }
+            None => 0,
+        };
+
+        for (order, mut focus) in &mut buttons {
+            if order.0 == next_id {
+                *focus = UiFocus::Focused;
+            } else {
+                *focus = UiFocus::None;
+            }
+        }
+    }
+}
+
+fn focus_press_button(
+    mut buttons: Query<(&mut Interaction, &mut UiFocus), With<Button>>,
+    input: Res<ButtonInput<KeyCode>>,
+) {
+    if input.just_pressed(KeyCode::Enter) || input.just_pressed(KeyCode::Space) {
+        for (mut interaction, focus) in &mut buttons {
+            if *focus == UiFocus::Focused {
+                // Piggy back on the Mouse Interaction to trigger the pressed in different menus.
+                *interaction = Interaction::Pressed;
             }
         }
     }

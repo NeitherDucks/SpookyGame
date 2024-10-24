@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{rendering::PIXEL_PERFECT_LAYERS, states::GameState};
 
-use super::{ButtonTag, UiElementsHandles};
+use super::{ButtonTag, UiElementsHandles, UiFocus, UiFocusOrder};
 
 #[derive(Component)]
 pub struct MainMenuTag;
@@ -48,6 +48,8 @@ pub fn setup(mut commands: Commands, ui_elements: Res<UiElementsHandles>) {
                         ..default()
                     },
                     ButtonTag::Play,
+                    UiFocusOrder(0),
+                    UiFocus::Focused,
                 ))
                 .with_children(|parent| {
                     parent.spawn((
@@ -84,6 +86,8 @@ pub fn setup(mut commands: Commands, ui_elements: Res<UiElementsHandles>) {
                         ..default()
                     },
                     ButtonTag::Quit,
+                    UiFocusOrder(1),
+                    UiFocus::None,
                 ))
                 .with_children(|parent| {
                     parent.spawn((
@@ -112,8 +116,8 @@ pub fn button_system(
     mut exit: EventWriter<AppExit>,
 ) {
     for (interaction, tag) in &interaction_query {
-        match *interaction {
-            Interaction::Pressed => match tag {
+        if *interaction == Interaction::Pressed {
+            match tag {
                 ButtonTag::Play => {
                     next_state.set(GameState::Playing);
                 }
@@ -121,8 +125,7 @@ pub fn button_system(
                     exit.send(AppExit::Success);
                 }
                 _ => {}
-            },
-            _ => {}
+            }
         }
     }
 }

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::{ButtonTag, UiElementsHandles};
+use super::{ButtonTag, UiElementsHandles, UiFocus, UiFocusOrder};
 use crate::states::GameState;
 
 #[derive(Component)]
@@ -49,6 +49,8 @@ pub fn setup(mut commands: Commands, ui_elements: Res<UiElementsHandles>) {
                         ..default()
                     },
                     ButtonTag::Reset,
+                    UiFocusOrder(0),
+                    UiFocus::Focused,
                 ))
                 .with_children(|parent| {
                     parent.spawn((
@@ -83,6 +85,8 @@ pub fn setup(mut commands: Commands, ui_elements: Res<UiElementsHandles>) {
                         ..default()
                     },
                     ButtonTag::Quit,
+                    UiFocusOrder(1),
+                    UiFocus::None,
                 ))
                 .with_children(|parent| {
                     parent.spawn((

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::states::{GameState, PlayingState};
 
-use super::{ButtonTag, UiElementsHandles};
+use super::{ButtonTag, UiElementsHandles, UiFocus, UiFocusOrder};
 
 #[derive(Component)]
 pub struct PauseMenuTag;
@@ -55,6 +55,8 @@ pub fn setup(mut commands: Commands, ui_elements: Res<UiElementsHandles>) {
                         ..default()
                     },
                     ButtonTag::Resume,
+                    UiFocusOrder(0),
+                    UiFocus::Focused,
                 ))
                 .with_children(|parent| {
                     parent.spawn((
@@ -82,6 +84,8 @@ pub fn setup(mut commands: Commands, ui_elements: Res<UiElementsHandles>) {
                         ..default()
                     },
                     ButtonTag::Reset,
+                    UiFocusOrder(1),
+                    UiFocus::None,
                 ))
                 .with_children(|parent| {
                     parent.spawn((
@@ -116,6 +120,8 @@ pub fn setup(mut commands: Commands, ui_elements: Res<UiElementsHandles>) {
                         ..default()
                     },
                     ButtonTag::Quit,
+                    UiFocusOrder(2),
+                    UiFocus::None,
                 ))
                 .with_children(|parent| {
                     parent.spawn((
