@@ -13,7 +13,8 @@ use crate::{
 
 use super::{MovementSpeed, INVESTIGATOR_ANIMATION_RUN};
 
-#[derive(Clone, Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 #[component(storage = "SparseSet")]
 pub struct Investigate {
     pub target: GridCoords,

@@ -2,16 +2,20 @@ use bevy::prelude::*;
 
 use super::UiElementsHandles;
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 pub struct UiTag;
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 pub struct VillagerKilledUiTag;
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 pub struct VillagerTotalUiTag;
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 pub struct PlayerLivesUiTag;
 
 pub fn setup(mut commands: Commands, ui_elements: Res<UiElementsHandles>) {

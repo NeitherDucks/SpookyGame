@@ -11,7 +11,8 @@ use crate::{
 
 use super::{MovementSpeed, INVESTIGATOR_ANIMATION_WALK, VILLAGER_ANIMATION_WALK};
 
-#[derive(Clone, Default, Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 #[component(storage = "SparseSet")]
 pub struct Wander;
 

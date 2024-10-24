@@ -18,7 +18,9 @@ pub struct Chase {
     pub player_last_seen: GridCoords,
 }
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
+#[component(storage = "SparseSet")]
 pub struct Chased;
 
 pub fn chase_on_enter(mut commands: Commands, query: Query<Entity, Added<Chase>>) {

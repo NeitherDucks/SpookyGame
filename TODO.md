@@ -3,7 +3,7 @@ TODO
 TO ADD:
     - Sounds
     - Music
-    - Gamepad support
+    
 TO FIX:
 
 POLISH:

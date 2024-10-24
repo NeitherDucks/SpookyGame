@@ -2,7 +2,8 @@ use bevy::{prelude::*, render::view::RenderLayers};
 
 use crate::rendering::PIXEL_PERFECT_LAYERS;
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 pub struct DeadPlayerTag;
 
 #[derive(Bundle)]

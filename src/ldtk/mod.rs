@@ -33,28 +33,36 @@ use crate::{
     states::{GameState, PlayingState},
 };
 
-#[derive(Resource)]
+#[derive(Resource, Reflect)]
+#[reflect(Resource)]
 pub struct SpaceBarSpriteHandle(Handle<Image>);
 
-#[derive(Resource)]
+#[derive(Resource, Reflect)]
+#[reflect(Resource)]
 pub struct DeadPlayerSpriteHandle(pub Handle<Image>);
 
-#[derive(Resource)]
+#[derive(Resource, Reflect)]
+#[reflect(Resource)]
 pub struct VillagerSpritesheetHandles(pub Vec<Handle<Image>>);
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 pub struct AnimatedLdtkLayer;
 
 #[derive(Resource, Reflect)]
+#[reflect(Resource)]
 pub struct AnimatedLdtkLayerTimer(pub Timer);
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 pub struct ConstantAnimatedLdtkLayer;
 
 #[derive(Resource, Reflect)]
+#[reflect(Resource)]
 pub struct ConstantAnimatedLdtkLayerTimer(pub Timer);
 
-#[derive(Resource)]
+#[derive(Resource, Reflect)]
+#[reflect(Resource)]
 pub struct EnemyLights {
     investigator_light: Handle<Image>,
     villager_light: Handle<Image>,
@@ -62,7 +70,8 @@ pub struct EnemyLights {
     timer: Timer,
 }
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 pub struct Light;
 
 pub struct MyLdtkPlugin;

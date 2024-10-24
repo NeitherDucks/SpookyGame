@@ -20,13 +20,17 @@ pub enum ANIMATIONS {
     NoiseMaker,
 }
 
-#[derive(Event)]
+#[derive(Event, Reflect)]
 pub struct AnimationFinishedEvent(pub ANIMATIONS);
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
+#[component(storage = "SparseSet")]
 pub struct DuringDeathAnimation;
 
 #[derive(Component, Reflect, Clone, Copy)]
+#[reflect(Component)]
+#[component(storage = "SparseSet")]
 pub struct AnimationConfig {
     name: ANIMATIONS,
     first_sprite_index: usize,
@@ -72,6 +76,7 @@ impl AnimationConfig {
 }
 
 #[derive(Component, Reflect, Clone, Copy)]
+#[reflect(Component)]
 pub struct AnimationOffset {
     pub actual: usize,
     pub offset: usize,
@@ -86,7 +91,9 @@ impl Default for AnimationOffset {
     }
 }
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
+#[component(storage = "SparseSet")]
 pub struct AnimationTimer(pub Timer);
 
 impl AnimationTimer {

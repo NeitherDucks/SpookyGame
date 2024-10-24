@@ -3,7 +3,8 @@ use bevy_ecs_ldtk::prelude::*;
 
 use crate::game_mode::Score;
 
-#[derive(Component, Default)]
+#[derive(Reflect, Clone, Component, Default)]
+#[reflect(Component)]
 pub struct PlayerRespawnPointTag;
 
 #[derive(Bundle, Default, LdtkEntity)]

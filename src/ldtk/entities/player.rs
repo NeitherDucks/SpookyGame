@@ -12,7 +12,8 @@ pub use crate::{
     rendering::PIXEL_PERFECT_LAYERS,
 };
 
-#[derive(Component, Default)]
+#[derive(Reflect, Clone, Component, Default)]
+#[reflect(Component)]
 pub struct PlayerTag;
 
 #[derive(Bundle, LdtkEntity)]

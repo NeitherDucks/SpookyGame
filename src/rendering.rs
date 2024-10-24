@@ -22,27 +22,32 @@ pub const HIGH_RES_LAYERS: RenderLayers = RenderLayers::layer(3);
 
 /// Low-resolution texture that contains the pixel-perfect world.
 /// Canvas itself is rendered to the high-resolution world.
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 struct Canvas;
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 pub struct Cameras;
 
 /// Camera that renders the pixel-perfect world to the [`Canvas`].
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 pub struct InGameCamera;
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 pub struct LightsCamera;
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 pub struct HeightCamera;
 
 /// Camera that renders the [`Canvas`] (and other graphics on [`HIGH_RES_LAYERS`]) to the screen.
 #[derive(Component)]
 struct OuterCamera;
 
-#[derive(Default, Debug, Clone, Copy, ShaderType)]
+#[derive(Default, Debug, Clone, Copy, ShaderType, Reflect)]
 struct Light {
     position: Vec2,
     aim: Vec2,

@@ -1,8 +1,7 @@
 use bevy::prelude::*;
 
 // Different states of the game.
-#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
-#[allow(dead_code)]
+#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States, Reflect)]
 pub enum GameState {
     #[default]
     Loading,
@@ -12,9 +11,8 @@ pub enum GameState {
 }
 
 // Different states of the playing the game.
-#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, SubStates)]
+#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, SubStates, Reflect)]
 #[source(GameState = GameState::Playing)]
-#[allow(dead_code)]
 pub enum PlayingState {
     #[default]
     Setup,

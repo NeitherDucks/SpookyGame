@@ -7,7 +7,8 @@ pub use crate::rendering::PIXEL_PERFECT_LAYERS;
 
 use super::TILE_SIZE;
 
-#[derive(Default, Component)]
+#[derive(Reflect, Clone, Component, Default)]
+#[reflect(Component)]
 pub struct HiddingSpotExit(pub Vec2);
 
 #[derive(Bundle, LdtkEntity)]

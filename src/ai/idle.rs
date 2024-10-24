@@ -6,7 +6,8 @@ use crate::ldtk::{animation::new_animation, entities::EnemyTag};
 
 use super::{INVESTIGATOR_ANIMATION_IDLE, VILLAGER_ANIMATION_IDLE};
 
-#[derive(Clone, Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 #[component(storage = "SparseSet")]
 pub struct Idle {
     pub start: Instant,

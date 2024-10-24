@@ -11,7 +11,8 @@ use crate::{
 
 use super::{MovementSpeed, VILLAGER_ANIMATION_FLEE};
 
-#[derive(Clone, Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 #[component(storage = "SparseSet")]
 pub struct RunAway {
     pub player_last_seen: GridCoords,

@@ -5,6 +5,7 @@ use bevy_rapier2d::prelude::*;
 use super::{ColliderBundle, UnresolvedEntityRef};
 
 #[derive(Debug, Component, Reflect, Copy, Clone)]
+#[reflect(Component)]
 pub enum InteractibleTag {
     HiddingSpot,
     NoiseMaker,

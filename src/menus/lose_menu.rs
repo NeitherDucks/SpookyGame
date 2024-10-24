@@ -3,7 +3,8 @@ use bevy::prelude::*;
 use super::{ButtonTag, UiElementsHandles, UiFocus, UiFocusOrder};
 use crate::states::GameState;
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 pub struct LoseMenuTag;
 
 pub fn setup(mut commands: Commands, ui_elements: Res<UiElementsHandles>) {

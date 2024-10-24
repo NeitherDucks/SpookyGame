@@ -23,23 +23,29 @@ pub use villager::*;
 // IMPROVEME
 // Could have a list of possible Entity interactions and counters.
 // And a Key press to switch.
-#[derive(Component, Reflect)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
+#[component(storage = "SparseSet")]
 pub struct InteractionPossible {
     pub entity: Entity,
     pub counter: u32,
     pub interactibe_type: InteractibleTag,
 }
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
+#[component(storage = "SparseSet")]
 pub struct ShowInteractionButtonTag;
 
 #[derive(Reflect, Component, PartialEq, Eq)]
+#[reflect(Component)]
 pub enum EnemyTag {
     Investigator,
     Villager,
 }
 
 #[derive(Component, Reflect, Clone, Copy)]
+#[reflect(Component)]
 pub struct Aim(pub Vec2);
 
 impl Default for Aim {
@@ -78,7 +84,9 @@ impl Default for ColliderBundle {
     }
 }
 
-#[derive(Debug, Default, Deref, DerefMut, Component)]
+#[derive(Reflect, Debug, Default, Deref, DerefMut, Component)]
+#[reflect(Component)]
+#[component(storage = "SparseSet")]
 pub struct UnresolvedEntityRef(Option<EntityIid>);
 
 impl UnresolvedEntityRef {
@@ -94,6 +102,7 @@ impl UnresolvedEntityRef {
 }
 
 #[derive(Debug, Deref, DerefMut, Component, Reflect)]
+#[reflect(Component)]
 pub struct InteractibleEntityRef(pub Entity);
 
 pub fn resolve_entity_references(

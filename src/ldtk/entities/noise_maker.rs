@@ -6,16 +6,21 @@ pub use crate::rendering::PIXEL_PERFECT_LAYERS;
 
 use super::{player::PlayerTag, InteractibleEntityRef, InteractionPossible, GRID_SIZE};
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
+#[component(storage = "SparseSet")]
 pub struct NoiseMakerTriggered(pub GridCoords);
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 pub struct NoiseMakerTriggerable;
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 pub struct NoiseMakerReTriggerable;
 
-#[derive(Default, Component)]
+#[derive(Reflect, Clone, Component, Default)]
+#[reflect(Component)]
 pub struct NoiseMakerInvestigateTarget(pub GridCoords);
 
 #[derive(Bundle, LdtkEntity)]

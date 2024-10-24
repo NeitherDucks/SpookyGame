@@ -17,7 +17,8 @@ use crate::{
     utils::remap_rand_f32,
 };
 
-#[derive(Component, Default, Debug)]
+#[derive(Component, Default, Debug, Reflect)]
+#[reflect(Component)]
 pub struct Tile;
 
 pub struct GridFindError;
@@ -34,7 +35,8 @@ impl<T: Component> Plugin for GridPlugin<T> {
     }
 }
 
-#[derive(Resource)]
+#[derive(Resource, Reflect)]
+#[reflect(Resource)]
 pub struct Grid<T> {
     pub entities: [[Option<Entity>; GRID_SIZE.y as usize]; GRID_SIZE.x as usize],
     _marker: PhantomData<T>,

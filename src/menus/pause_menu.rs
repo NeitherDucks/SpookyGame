@@ -4,7 +4,8 @@ use crate::states::{GameState, PlayingState};
 
 use super::{ButtonTag, UiElementsHandles, UiFocus, UiFocusOrder};
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 pub struct PauseMenuTag;
 
 pub fn setup(mut commands: Commands, ui_elements: Res<UiElementsHandles>) {

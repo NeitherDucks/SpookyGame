@@ -11,7 +11,8 @@ mod win_menu;
 
 pub use ui::{PlayerLivesUiTag, VillagerKilledUiTag, VillagerTotalUiTag};
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 enum ButtonTag {
     Play,
     Quit,
@@ -19,18 +20,22 @@ enum ButtonTag {
     Resume,
 }
 
+#[derive(Reflect, Clone)]
 struct UiElementHandles {
     image: Handle<Image>,
     atlas: Option<Handle<TextureAtlasLayout>>,
 }
 
-#[derive(Resource)]
+#[derive(Resource, Reflect)]
+#[reflect(Resource)]
 struct UiElementsHandles(HashMap<String, UiElementHandles>);
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 struct UiFocusOrder(i32);
 
-#[derive(Component, PartialEq, Eq)]
+#[derive(Component, PartialEq, Eq, Reflect)]
+#[reflect(Component)]
 enum UiFocus {
     Pressed,
     Focused,

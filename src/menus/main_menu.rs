@@ -4,7 +4,8 @@ use crate::{rendering::PIXEL_PERFECT_LAYERS, states::GameState};
 
 use super::{ButtonTag, UiElementsHandles, UiFocus, UiFocusOrder};
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 pub struct MainMenuTag;
 
 pub fn setup(mut commands: Commands, ui_elements: Res<UiElementsHandles>) {

@@ -19,7 +19,8 @@ use crate::{
     states::{GameState, PlayingState},
 };
 
-#[derive(Resource)]
+#[derive(Resource, Reflect)]
+#[reflect(Resource)]
 pub struct Score {
     total_villagers: u8,
     villagers_killed: u8,

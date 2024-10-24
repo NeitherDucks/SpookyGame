@@ -19,7 +19,9 @@ use crate::{
     states::{GameState, PlayingState},
 };
 
-#[derive(Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
+#[component(storage = "SparseSet")]
 pub struct PlayerIsHidding(pub Vec2);
 
 pub struct PlayerPlugin;

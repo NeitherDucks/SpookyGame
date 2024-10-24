@@ -10,14 +10,16 @@ use crate::{
 
 use super::{run_away::RunAway, MovementSpeed, VILLAGER_ANIMATION_FLEE};
 
-#[derive(Clone, Component)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 #[component(storage = "SparseSet")]
 pub struct TalkToInvestigator {
     pub investigator: Entity,
     pub player_last_seen: GridCoords,
 }
 
-#[derive(Clone, Component, Reflect)]
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
 #[component(storage = "SparseSet")]
 pub struct HasTakedToInvestigator;
 
