@@ -1,4 +1,4 @@
-use bevy::{prelude::*, utils::HashMap};
+use bevy::{input::gamepad::GamepadEvent, prelude::*, utils::HashMap};
 use iyes_progress::{prelude::AssetsLoading, ProgressPlugin};
 
 use crate::states::{GameState, PlayingState};
@@ -63,12 +63,19 @@ impl Plugin for MenusPlugin {
                 main_menu::button_system.run_if(in_state(GameState::MainMenu)),
                 pause_menu::button_system.run_if(in_state(PlayingState::Pause)),
                 win_menu::button_system.run_if(in_state(PlayingState::Win)),
-                (button_interaction, change_focus, focus_press_button).run_if(
-                    in_state(PlayingState::Lose)
-                        .or_else(in_state(GameState::MainMenu))
-                        .or_else(in_state(PlayingState::Pause))
-                        .or_else(in_state(PlayingState::Win)),
-                ),
+                (
+                    button_interaction,
+                    keyboard_navigation,
+                    keyboard_focus_press,
+                    gamepad_navigation,
+                    gamepad_focus_press,
+                )
+                    .run_if(
+                        in_state(PlayingState::Lose)
+                            .or_else(in_state(GameState::MainMenu))
+                            .or_else(in_state(PlayingState::Pause))
+                            .or_else(in_state(PlayingState::Win)),
+                    ),
             ),
         );
     }
@@ -146,72 +153,134 @@ fn button_interaction(
     }
 }
 
-fn change_focus(
-    mut buttons: Query<(&UiFocusOrder, &mut UiFocus), With<Button>>,
-    input: Res<ButtonInput<KeyCode>>,
-) {
-    let mut direction: Option<i32> = None;
+fn navigation(direction: i32, mut buttons: Query<(&UiFocusOrder, &mut UiFocus), With<Button>>) {
+    // Find current focused item. Also get min/max index.
+    let mut current: Option<i32> = None;
+    let mut min_index: i32 = 0;
+    let mut max_index: i32 = 0;
 
-    if input.just_pressed(KeyCode::KeyS)
-        || input.just_pressed(KeyCode::ArrowDown)
-        || input.just_pressed(KeyCode::Tab)
-    {
-        direction = Some(1);
-    }
-
-    if input.just_pressed(KeyCode::KeyW) || input.just_pressed(KeyCode::ArrowUp) {
-        direction = Some(-1);
-    }
-
-    if let Some(direction) = direction {
-        // Find current focused item. Also get min/max index.
-        let mut current: Option<i32> = None;
-        let mut min_index: i32 = 0;
-        let mut max_index: i32 = 0;
-
-        for (order, focus) in &buttons {
-            if *focus == UiFocus::Focused {
-                current = Some(order.0);
-            }
-
-            min_index = min_index.min(order.0);
-            max_index = max_index.max(order.0);
+    for (order, focus) in &buttons {
+        if *focus == UiFocus::Focused {
+            current = Some(order.0);
         }
 
-        // If none, set focus on item with index 0, else, set focus on next item, wrapping as needed.
-        let next_id = match current {
-            Some(current) => {
-                if current + direction > max_index {
-                    min_index
-                } else if current + direction < min_index {
-                    max_index
-                } else {
-                    current + direction
-                }
-            }
-            None => 0,
-        };
+        min_index = min_index.min(order.0);
+        max_index = max_index.max(order.0);
+    }
 
-        for (order, mut focus) in &mut buttons {
-            if order.0 == next_id {
-                *focus = UiFocus::Focused;
+    // If none, set focus on item with index 0, else, set focus on next item, wrapping as needed.
+    let next_id = match current {
+        Some(current) => {
+            if current + direction > max_index {
+                min_index
+            } else if current + direction < min_index {
+                max_index
             } else {
-                *focus = UiFocus::None;
+                current + direction
             }
+        }
+        None => 0,
+    };
+
+    for (order, mut focus) in &mut buttons {
+        if order.0 == next_id {
+            *focus = UiFocus::Focused;
+        } else {
+            *focus = UiFocus::None;
         }
     }
 }
 
-fn focus_press_button(
+fn focus_press(buttons: &mut Query<(&mut Interaction, &mut UiFocus), With<Button>>) {
+    for (mut interaction, focus) in buttons {
+        if *focus == UiFocus::Focused {
+            // Piggy back on the Mouse Interaction to trigger the pressed in different menus.
+            *interaction = Interaction::Pressed;
+        }
+    }
+}
+
+fn keyboard_navigation(
+    buttons: Query<(&UiFocusOrder, &mut UiFocus), With<Button>>,
+    keyboard: Res<ButtonInput<KeyCode>>,
+) {
+    let mut direction: Option<i32> = None;
+
+    if keyboard.just_pressed(KeyCode::KeyS)
+        || keyboard.just_pressed(KeyCode::ArrowDown)
+        || keyboard.just_pressed(KeyCode::Tab)
+    {
+        direction = Some(1);
+    }
+
+    if keyboard.just_pressed(KeyCode::KeyW) || keyboard.just_pressed(KeyCode::ArrowUp) {
+        direction = Some(-1);
+    }
+
+    if let Some(direction) = direction {
+        navigation(direction, buttons);
+    }
+}
+
+fn keyboard_focus_press(
     mut buttons: Query<(&mut Interaction, &mut UiFocus), With<Button>>,
     input: Res<ButtonInput<KeyCode>>,
 ) {
     if input.just_pressed(KeyCode::Enter) || input.just_pressed(KeyCode::Space) {
-        for (mut interaction, focus) in &mut buttons {
-            if *focus == UiFocus::Focused {
-                // Piggy back on the Mouse Interaction to trigger the pressed in different menus.
-                *interaction = Interaction::Pressed;
+        focus_press(&mut buttons);
+    }
+}
+
+fn gamepad_navigation(
+    buttons: Query<(&UiFocusOrder, &mut UiFocus), With<Button>>,
+    mut evr_gamepad: EventReader<GamepadEvent>,
+) {
+    let mut direction: Option<i32> = None;
+
+    for ev in evr_gamepad.read() {
+        match ev {
+            GamepadEvent::Axis(_ev_axis) => {
+                // Would need to debounce it.
+                // if ev_axis.axis_type == GamepadAxisType::LeftStickY && ev_axis.value.abs() > 0.8 {
+                //     direction = Some(ev_axis.value.signum() as i32);
+                // }
             }
+            GamepadEvent::Button(ev_button) => {
+                if ev_button.value > 0. {
+                    match ev_button.button_type {
+                        GamepadButtonType::DPadDown => {
+                            direction = Some(1);
+                        }
+                        GamepadButtonType::DPadUp => {
+                            direction = Some(-1);
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+
+    if let Some(direction) = direction {
+        navigation(direction, buttons);
+    }
+}
+
+fn gamepad_focus_press(
+    mut buttons: Query<(&mut Interaction, &mut UiFocus), With<Button>>,
+    mut evr_gamepad: EventReader<GamepadEvent>,
+) {
+    for ev in evr_gamepad.read() {
+        match ev {
+            GamepadEvent::Button(ev_button) => {
+                if ev_button.value > 0. {
+                    if ev_button.button_type == GamepadButtonType::South {
+                        focus_press(&mut buttons);
+                    }
+                }
+            }
+            _ => {}
         }
     }
 }

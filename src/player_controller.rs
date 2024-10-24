@@ -32,14 +32,14 @@ impl Plugin for PlayerPlugin {
                 (
                     setup_camera,
                     move_player,
-                    spacebar_pressed,
+                    interaction_pressed,
                     player_is_chased,
                 )
                     .run_if(in_state(PlayingState::Playing)),
             )
             .add_systems(
                 Update,
-                escape_pressed
+                toggle_pause
                     .run_if(in_state(PlayingState::Playing).or_else(in_state(PlayingState::Pause))),
             );
     }
@@ -92,6 +92,8 @@ fn move_player(
     mut cameras: Query<&mut Transform, (With<Cameras>, Without<PlayerTag>)>,
     time: Res<Time>,
     input: Res<ButtonInput<KeyCode>>,
+    gamepad_buttons: Res<ButtonInput<GamepadButton>>,
+    gamepad_axes: Res<Axis<GamepadAxis>>,
 ) {
     let Ok((entity, animation, mut controller, mut transform)) = player.get_single_mut() else {
         return;
@@ -103,23 +105,66 @@ fn move_player(
 
     let mut direction = Vec2::ZERO;
 
-    if input.pressed(KeyCode::KeyW) {
+    if input.pressed(KeyCode::KeyW)
+        || gamepad_buttons.pressed(GamepadButton {
+            gamepad: Gamepad::new(0),
+            button_type: GamepadButtonType::DPadUp,
+        })
+    {
         direction.y += 1.0;
     }
 
-    if input.pressed(KeyCode::KeyS) {
+    if input.pressed(KeyCode::KeyS)
+        || gamepad_buttons.pressed(GamepadButton {
+            gamepad: Gamepad::new(0),
+            button_type: GamepadButtonType::DPadDown,
+        })
+    {
         direction.y -= 1.0;
     }
 
-    if input.pressed(KeyCode::KeyA) {
+    if input.pressed(KeyCode::KeyA)
+        || gamepad_buttons.pressed(GamepadButton {
+            gamepad: Gamepad::new(0),
+            button_type: GamepadButtonType::DPadLeft,
+        })
+    {
         direction.x -= 1.0;
     }
 
-    if input.pressed(KeyCode::KeyD) {
+    if input.pressed(KeyCode::KeyD)
+        || gamepad_buttons.pressed(GamepadButton {
+            gamepad: Gamepad::new(0),
+            button_type: GamepadButtonType::DPadRight,
+        })
+    {
         direction.x += 1.0;
     }
 
-    let direction = direction.normalize_or_zero();
+    let axis_lx = GamepadAxis {
+        gamepad: Gamepad::new(0),
+        axis_type: GamepadAxisType::LeftStickX,
+    };
+
+    let axis_ly = GamepadAxis {
+        gamepad: Gamepad::new(0),
+        axis_type: GamepadAxisType::LeftStickY,
+    };
+
+    let mut direction = direction.normalize_or_zero();
+
+    if let (Some(x), Some(y)) = (gamepad_axes.get(axis_lx), gamepad_axes.get(axis_ly)) {
+        // Filter "drift" or whatever this is.
+        let x = if x.abs() > 0.1 { x } else { 0. };
+        let y = if y.abs() > 0.1 { y } else { 0. };
+
+        direction = Vec2::new(x, y);
+
+        // Normalize if above 1.
+        if x + y > 1. {
+            direction /= x + y;
+        }
+    }
 
     let move_delta = direction * PLAYER_SPEED * time.delta_seconds();
 
@@ -146,9 +191,10 @@ fn move_player(
     }
 }
 
-fn spacebar_pressed(
+fn interaction_pressed(
     mut commands: Commands,
     input: Res<ButtonInput<KeyCode>>,
+    gamepad: Res<ButtonInput<GamepadButton>>,
     mut player: Query<
         (
             Entity,
@@ -171,7 +217,12 @@ fn spacebar_pressed(
     >,
 ) {
     // If the Space bar was just pressed
-    if !input.just_pressed(KeyCode::Space) {
+    if !(input.just_pressed(KeyCode::Space)
+        || gamepad.just_pressed(GamepadButton {
+            gamepad: Gamepad::new(0),
+            button_type: GamepadButtonType::South,
+        }))
+    {
         return;
     }
 
@@ -284,12 +335,18 @@ fn spacebar_pressed(
     }
 }
 
-fn escape_pressed(
+fn toggle_pause(
     input: Res<ButtonInput<KeyCode>>,
+    gamepad: Res<ButtonInput<GamepadButton>>,
     current_state: Res<State<PlayingState>>,
     mut next_state: ResMut<NextState<PlayingState>>,
 ) {
-    if input.just_pressed(KeyCode::Escape) {
+    if input.just_pressed(KeyCode::Escape)
+        || gamepad.just_pressed(GamepadButton {
+            gamepad: Gamepad::new(0),
+            button_type: GamepadButtonType::Start,
+        })
+    {
         if *current_state.get() == PlayingState::Playing {
             next_state.set(PlayingState::Pause);
         } else if *current_state.get() == PlayingState::Pause {
