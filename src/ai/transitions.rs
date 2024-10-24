@@ -11,7 +11,10 @@ use crate::{
     states::PlayingState,
 };
 
-use super::{Chase, Chased, Dead, Idle, Investigate, RunAway, TalkToInvestigator, Wander};
+use super::{
+    Chase, Chased, Dead, HasTakedToInvestigator, Idle, Investigate, RunAway, TalkToInvestigator,
+    Wander,
+};
 
 use crate::config::*;
 
@@ -106,7 +109,7 @@ pub fn notice_player(
 /// If any [`RunAway`] find an investigator on their path, swtich to going to talk to them.
 pub fn running_away_to_talk_to_investigator(
     mut commands: Commands,
-    query: Query<(Entity, &Transform, &Aim, &RunAway)>,
+    query: Query<(Entity, &Transform, &Aim, &RunAway), Without<HasTakedToInvestigator>>,
     query2: Query<(Entity, &Transform, &EnemyTag), Without<Chase>>,
 ) {
     for (entity, transform, aim, run_away) in &query {
@@ -150,9 +153,11 @@ pub fn talk_to_investigator_to_running_away(
                 .distance(entity_transform.translation.xy())
                 <= INTERACTION_DISTANCE * 1.5
             {
-                commands.entity(talk.investigator).remove::<Idle>();
-                commands.entity(talk.investigator).remove::<Investigate>();
-                commands.entity(talk.investigator).remove::<Wander>();
+                commands
+                    .entity(talk.investigator)
+                    .remove::<Idle>()
+                    .remove::<Investigate>()
+                    .remove::<Wander>();
 
                 commands.entity(talk.investigator).insert(Investigate {
                     target: talk.player_last_seen,
@@ -161,9 +166,12 @@ pub fn talk_to_investigator_to_running_away(
 
                 commands.entity(entity).remove::<TalkToInvestigator>();
 
-                commands.entity(entity).insert(RunAway {
-                    player_last_seen: talk.player_last_seen,
-                });
+                commands
+                    .entity(entity)
+                    .insert(RunAway {
+                        player_last_seen: talk.player_last_seen,
+                    })
+                    .insert(HasTakedToInvestigator);
             }
         }
     }

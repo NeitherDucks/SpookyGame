@@ -17,6 +17,10 @@ pub struct TalkToInvestigator {
     pub player_last_seen: GridCoords,
 }
 
+#[derive(Clone, Component, Reflect)]
+#[component(storage = "SparseSet")]
+pub struct HasTakedToInvestigator;
+
 pub fn talk_to_investigator_on_enter(
     mut commands: Commands,
     query: Query<Entity, Added<TalkToInvestigator>>,
