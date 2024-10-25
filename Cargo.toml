@@ -3,9 +3,31 @@ name = "SpookyGame"
 version = "0.1.0"
 edition = "2021"
 
+[dependencies.bevy]
+version = "0.14.2"
+default-features = false
+features = [
+    "multi_threaded",     # Run with multithreading
+    "bevy_asset",         # Assets management
+    "bevy_audio",         # Builtin audio
+    "bevy_gilrs",         # Gamepad input support
+    "bevy_scene",         # Scenes management
+    "bevy_winit",         # Window management (cross-platform Winit backend)
+    "bevy_render",        # Rendering framework core
+    "bevy_core_pipeline", # Common rendering abstractions
+    "bevy_sprite",        # 2D (sprites) rendering
+    "bevy_state",         # Enable built in global state machines
+    "bevy_text",          # Text/font rendering
+    "bevy_ui",            # UI toolkit
+    "default_font",       # Embed a minimal default font for text/UI
+    "webgl2",             # Enable some limitations to be able to use WebGL2.
+
+    "png",    # PNG image format for simple 2D images
+    "vorbis", # Audio: OGG Vorbis
+]
+
 [dependencies]
-bevy = "0.14.2"
-bevy_dev_tools = "0.14.2"
+# bevy_dev_tools = "0.14.2"
 bevy_ecs_ldtk = "0.10.0"
 bevy_ecs_tilemap = "0.14.0"
 bevy_embedded_assets = "0.11.0"
@@ -19,3 +41,8 @@ rand_core = "0.6.4"
 # For building web
 [target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
 getrandom = { version = "0.2", features = ["js"] }
+
+# [profile.release]
+# opt-level = 'z'
+# lto = true
+# codegen-units = 1
