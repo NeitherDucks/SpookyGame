@@ -2,7 +2,7 @@ use animation::{
     animation_changed, animation_offset_changed, update_animations, update_animations_during_death,
     AnimationFinishedEvent,
 };
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::hashbrown::HashMap};
 use bevy_ecs_tilemap::tiles::TileTextureIndex;
 use bevy_rand::prelude::{GlobalEntropy, WyRand};
 use collision_tile::AICollisionTileBundle;
@@ -237,8 +237,10 @@ pub fn interaction_events(
         return;
     };
 
-    let mut events: i32 = 0;
-    let mut entity: Option<(Entity, InteractibleTag)> = None;
+    let mut events: HashMap<Entity, (i32, &InteractibleTag)> = HashMap::new();
+
+    // let mut events: i32 = 0;
+    // let mut entity: Option<(Entity, InteractibleTag)> = None;
 
     for collision_event in collision_events.read() {
         let (add, from, to) = match collision_event {
@@ -259,28 +261,42 @@ pub fn interaction_events(
             continue;
         };
 
-        if let Some((entity, _)) = entity {
-            if entity == reference.0 {
-                if add {
-                    events += 1;
-                } else {
-                    events -= 1;
-                }
+        // if let Some((entity, _)) = entity {
+        //     if entity == reference.0 {
+        //         if add {
+        //             events += 1;
+        //         } else {
+        //             events -= 1;
+        //         }
+        //     }
+        // } else {
+        //     entity = Some((reference.0, *tag));
+        //     if add {
+        //         events += 1;
+        //     } else {
+        //         events -= 1;
+        //     }
+        // }
+
+        if let Some((count, _)) = events.get_mut(&reference.0) {
+            if add {
+                *count += 1;
+            } else {
+                *count -= 1;
             }
         } else {
-            entity = Some((reference.0, *tag));
             if add {
-                events += 1;
+                events.insert(reference.0, (1, tag));
             } else {
-                events -= 1;
+                events.insert(reference.0, (-1, tag));
             }
         }
     }
 
-    if let Some((entity, tag)) = entity {
+    if let Some((entity, (count, tag))) = events.into_iter().last() {
         if let Some(current_interaction) = current_interaction.as_deref_mut() {
             if current_interaction.entity == entity {
-                let counter = current_interaction.counter as i32 + events;
+                let counter = current_interaction.counter as i32 + count;
                 if counter > 0 {
                     current_interaction.counter = counter as u32;
                 } else {
@@ -294,8 +310,8 @@ pub fn interaction_events(
         } else {
             commands.entity(player).insert(InteractionPossible {
                 entity: entity,
-                counter: events as u32,
-                interactibe_type: tag,
+                counter: count as u32,
+                interactibe_type: *tag,
             });
 
             let child = commands
@@ -303,7 +319,7 @@ pub fn interaction_events(
                     ShowInteractionButtonTag,
                     SpriteBundle {
                         texture: spacebar_sprite_handle.0.clone(),
-                        transform: Transform::from_translation(Vec3::new(0., 16., 0.)),
+                        transform: Transform::from_translation(Vec3::new(0., 16., 100.)),
                         ..Default::default()
                     },
                 ))
