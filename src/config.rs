@@ -34,7 +34,7 @@ pub const FIND_NEARBY_MAX_TRIES: u32 = 10;
 
 // AI & PLAYER
 
-pub const PLAYER_SPEED: f32 = 10. * PIXEL_PER_TILE; // In world unites per seconds
+pub const PLAYER_SPEED: f32 = 7. * PIXEL_PER_TILE; // In world unites per seconds
 
 pub const INTERACTION_DISTANCE: f32 = 1.1 * PIXEL_PER_TILE; // In world units
 
@@ -77,4 +77,4 @@ pub const VILLAGER_ANIMATION_DEATH: AnimationConfig =
 
 /// NOISE MAKER
 pub const NOISE_MAKER_ANIMATION: AnimationConfig =
-    AnimationConfig::new(ANIMATIONS::NoiseMaker, 0, 4, 8);
+    AnimationConfig::new(ANIMATIONS::NoiseMaker, 0, 3, 8).resets();
