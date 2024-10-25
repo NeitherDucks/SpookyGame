@@ -14,8 +14,8 @@ mod utils;
 use ai::AiPlugin;
 use audio::AudioPlugin;
 use bevy::prelude::*;
-use bevy_dev_tools::states::log_transitions;
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
+// use bevy_dev_tools::states::log_transitions;
+// use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rand::plugin::EntropyPlugin;
 use bevy_rand::prelude::WyRand;
 use bevy_rapier2d::plugin::{NoUserData, RapierConfiguration, RapierPhysicsPlugin, TimestepMode};
@@ -34,7 +34,7 @@ fn main() {
         .add_plugins((
             DefaultPlugins.set(ImagePlugin::default_nearest()),
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(PIXEL_PER_TILE),
-            WorldInspectorPlugin::new(), // for debug
+            // WorldInspectorPlugin::new(), // for debug
             EntropyPlugin::<WyRand>::default(),
             RenderingPlugin,
             AudioPlugin,
@@ -58,6 +58,6 @@ fn main() {
             force_update_from_transform_changes: true,
         })
         .init_state::<GameState>()
-        .add_systems(Update, log_transitions::<GameState>)
+        // .add_systems(Update, log_transitions::<GameState>)
         .run();
 }
