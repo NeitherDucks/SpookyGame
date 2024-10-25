@@ -17,7 +17,6 @@ use ai::AiPlugin;
 use audio::AudioPlugin;
 use bevy::prelude::*;
 use bevy_embedded_assets::{EmbeddedAssetPlugin, PluginMode};
-// use bevy_dev_tools::states::log_transitions;
 // use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rand::plugin::EntropyPlugin;
 use bevy_rand::prelude::WyRand;
@@ -40,6 +39,7 @@ fn main() {
             },
             DefaultPlugins.set(ImagePlugin::default_nearest()),
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(PIXEL_PER_TILE),
+            // #[cfg(debug_assertions)]
             // WorldInspectorPlugin::new(), // for debug
             EntropyPlugin::<WyRand>::default(),
             RenderingPlugin,
