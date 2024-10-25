@@ -18,6 +18,7 @@ enum ButtonTag {
     Quit,
     Reset,
     Resume,
+    Audio,
 }
 
 #[derive(Reflect, Clone)]
@@ -41,6 +42,10 @@ enum UiFocus {
     Focused,
     None,
 }
+
+#[derive(Reflect, Clone, Component)]
+#[reflect(Component)]
+pub struct AudioControllerTag;
 
 pub struct MenusPlugin;
 
@@ -99,6 +104,7 @@ fn setup(
         ("resume", "_button", 50, 17, 3),
         ("numbers", "", 8, 10, 11),
         ("others", "", 16, 17, 2),
+        ("audio", "", 16, 16, 3),
     ];
 
     let mut store: HashMap<String, UiElementHandles> = HashMap::new();
