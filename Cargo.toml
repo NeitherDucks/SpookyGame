@@ -42,7 +42,7 @@ rand_core = "0.6.4"
 [target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
 getrandom = { version = "0.2", features = ["js"] }
 
-# [profile.release]
-# opt-level = 'z'
-# lto = true
-# codegen-units = 1
+[profile.release]
+opt-level = 'z'
+lto = true
+codegen-units = 1
