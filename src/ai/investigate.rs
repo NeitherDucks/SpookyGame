@@ -1,4 +1,4 @@
-use std::time::Instant;
+// use std::time::Instant;
 
 use bevy::prelude::*;
 use bevy_ecs_ldtk::GridCoords;
@@ -11,23 +11,24 @@ use crate::{
     pathfinding::Path,
 };
 
-use super::{MovementSpeed, INVESTIGATOR_ANIMATION_RUN};
+use super::{MovementSpeed, INVESTIGATING_TIME, INVESTIGATOR_ANIMATION_RUN};
 
-#[derive(Reflect, Clone, Component)]
-#[reflect(Component)]
+#[derive(Clone, Component)]
 #[component(storage = "SparseSet")]
 pub struct Investigate {
     pub target: GridCoords,
-    pub start: Instant,
+    // pub start: Instant,
     pub reached_area: bool,
+    pub timer: Timer,
 }
 
 impl Default for Investigate {
     fn default() -> Self {
         Investigate {
             target: GridCoords::default(),
-            start: Instant::now(),
+            // start: Instant::now(),
             reached_area: false,
+            timer: Timer::from_seconds(INVESTIGATING_TIME as f32, TimerMode::Once),
         }
     }
 }
@@ -48,8 +49,11 @@ pub fn investigate_update(
     mut investigate: Query<(Entity, &GridCoords, &mut Investigate), Without<Path>>,
     grid: Res<Grid<Tile>>,
     mut rng: ResMut<GlobalEntropy<WyRand>>,
+    time: Res<Time>,
 ) {
     for (entity, coords, mut investigate) in &mut investigate {
+        investigate.timer.tick(time.delta());
+
         if *coords == investigate.target {
             investigate.reached_area = true;
         }

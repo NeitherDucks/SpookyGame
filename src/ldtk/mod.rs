@@ -13,7 +13,10 @@ pub mod animation;
 pub mod entities;
 
 use crate::{
-    ai::Chased, player_controller::PlayerIsHidding, rendering::HEIGHT_LAYERS, utils::remap_rand_f32,
+    ai::Chased,
+    player_controller::PlayerIsHidding,
+    // rendering::HEIGHT_LAYERS,
+    utils::remap_rand_f32,
 };
 use bevy_ecs_ldtk::{
     app::{LdtkEntityAppExt, LdtkIntCellAppExt},
@@ -319,9 +322,9 @@ fn modify_ldtk_layers(
 ) {
     for (entity, layer, mut visibility) in &mut query {
         match layer.identifier.as_str() {
-            "HEIGHT" => {
-                commands.entity(entity).insert(HEIGHT_LAYERS);
-            }
+            // "HEIGHT" => {
+            //     commands.entity(entity).insert(HEIGHT_LAYERS);
+            // }
             "IntGrid" => {
                 *visibility = Visibility::Hidden;
             }

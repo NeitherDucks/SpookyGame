@@ -13,7 +13,7 @@ pub use crate::{
 };
 use crate::{
     ldtk::{animation::AnimationOffset, EnemyLights, Light},
-    rendering::LIGHTS_LAYERS,
+    // rendering::LIGHTS_LAYERS,
     utils::remap_rand_f32,
 };
 
@@ -76,7 +76,8 @@ pub fn investigator_added(
                     index: remap_rand_f32(rng.next_u32(), 0., 4.) as usize,
                 },
                 Light,
-                LIGHTS_LAYERS,
+                // LIGHTS_LAYERS,
+                PIXEL_PERFECT_LAYERS,
             ))
             .id();
 

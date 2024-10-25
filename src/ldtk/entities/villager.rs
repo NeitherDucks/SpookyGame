@@ -14,7 +14,7 @@ pub use crate::{
 use crate::{
     game_mode::Score,
     ldtk::{animation::AnimationOffset, EnemyLights, Light, VillagerSpritesheetHandles},
-    rendering::LIGHTS_LAYERS,
+    // rendering::LIGHTS_LAYERS,
     utils::remap_rand_f32,
 };
 
@@ -86,7 +86,8 @@ pub fn villager_added(
                     index: remap_rand_f32(rng.next_u32(), 0., 4.) as usize,
                 },
                 Light,
-                LIGHTS_LAYERS,
+                // LIGHTS_LAYERS,
+                PIXEL_PERFECT_LAYERS,
             ))
             .id();
 

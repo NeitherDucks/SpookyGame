@@ -1,4 +1,4 @@
-use std::time::Duration;
+// use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy_ecs_ldtk::GridCoords;
@@ -180,7 +180,8 @@ pub fn talk_to_investigator_to_running_away(
 /// After the timer for [`Idle`] expires switch to [`Idle`].
 pub fn idle_to_wandering(mut commands: Commands, query: Query<(Entity, &Idle)>) {
     for (entity, idle) in &query {
-        if idle.start.elapsed() >= Duration::from_secs(IDLING_TIME) {
+        // if idle.start.elapsed() >= Duration::from_secs(IDLING_TIME) {
+        if idle.timer.just_finished() {
             commands.entity(entity).remove::<Idle>();
 
             commands.entity(entity).insert(Wander);
@@ -298,7 +299,8 @@ pub fn chasing_to_killing(
 /// After the [`Investigate`] timer ran out, switch back to [`Idle`].
 pub fn investigating_to_idle(mut commands: Commands, query: Query<(Entity, &Investigate)>) {
     for (entity, investigate) in &query {
-        if investigate.start.elapsed() >= Duration::from_secs(INVESTIGATING_TIME) {
+        // if investigate.start.elapsed() >= Duration::from_secs(INVESTIGATING_TIME) {
+        if investigate.timer.just_finished() {
             commands.entity(entity).remove::<Investigate>();
 
             commands.entity(entity).insert(Idle::default());
