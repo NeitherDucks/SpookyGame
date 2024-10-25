@@ -71,7 +71,7 @@ impl Plugin for GamePlugin {
                 (check_win_condition, update_ui).run_if(in_state(PlayingState::Playing)),
             )
             .add_systems(Update, player_died.run_if(in_state(PlayingState::Death)))
-            // .add_systems(Update, log_transitions::<PlayingState>);
+            // .add_systems(Update, log_transitions::<PlayingState>)
             ;
     }
 }
