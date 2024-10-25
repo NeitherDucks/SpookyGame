@@ -16,8 +16,8 @@ const RES_WIDTH: u32 = 640;
 const RES_HEIGHT: u32 = 360;
 
 pub const PIXEL_PERFECT_LAYERS: RenderLayers = RenderLayers::layer(0);
-pub const LIGHTS_LAYERS: RenderLayers = RenderLayers::layer(1);
-pub const HEIGHT_LAYERS: RenderLayers = RenderLayers::layer(2);
+// pub const LIGHTS_LAYERS: RenderLayers = RenderLayers::layer(1);
+// pub const HEIGHT_LAYERS: RenderLayers = RenderLayers::layer(2);
 pub const HIGH_RES_LAYERS: RenderLayers = RenderLayers::layer(3);
 
 /// Low-resolution texture that contains the pixel-perfect world.
@@ -100,17 +100,17 @@ fn setup(
         ..default()
     };
 
-    let mut canvas_lights = canvas.clone();
-    let mut canvas_height = canvas.clone();
+    // let mut canvas_lights = canvas.clone();
+    // let mut canvas_height = canvas.clone();
 
     // fill image.data with zeroes
     canvas.resize(canvas_size);
-    canvas_lights.resize(canvas_size);
-    canvas_height.resize(canvas_size);
+    // canvas_lights.resize(canvas_size);
+    // canvas_height.resize(canvas_size);
 
     let image_handle = images.add(canvas);
-    let image_lights_handle = images.add(canvas_lights);
-    let image_height_handle = images.add(canvas_height);
+    // let image_lights_handle = images.add(canvas_lights);
+    // let image_height_handle = images.add(canvas_height);
 
     commands
         .spawn((
@@ -136,35 +136,44 @@ fn setup(
             ));
 
             // this camera renders whatever is on LIGHTS_LAYERS` to the canvas
-            parent.spawn((
-                Camera2dBundle {
-                    camera: Camera {
-                        // render before the "height" camera
-                        order: -3,
-                        target: RenderTarget::Image(image_lights_handle.clone()),
-                        ..default()
-                    },
-                    ..default()
-                },
-                LightsCamera,
-                LIGHTS_LAYERS,
-            ));
+            // parent.spawn((
+            //     Camera2dBundle {
+            //         camera: Camera {
+            //             // render before the "height" camera
+            //             order: -3,
+            //             target: RenderTarget::Image(image_lights_handle.clone()),
+            //             ..default()
+            //         },
+            //         ..default()
+            //     },
+            //     LightsCamera,
+            //     LIGHTS_LAYERS,
+            // ));
 
             // this camera renders whatever is on `HEIGHT_LAYERS` to the canvas
-            parent.spawn((
-                Camera2dBundle {
-                    camera: Camera {
-                        // render before the "pixel perfect" camera
-                        order: -2,
-                        target: RenderTarget::Image(image_height_handle.clone()),
-                        ..default()
-                    },
-                    ..default()
-                },
-                HeightCamera,
-                HEIGHT_LAYERS,
-            ));
+            // parent.spawn((
+            //     Camera2dBundle {
+            //         camera: Camera {
+            //             // render before the "pixel perfect" camera
+            //             order: -2,
+            //             target: RenderTarget::Image(image_height_handle.clone()),
+            //             ..default()
+            //         },
+            //         ..default()
+            //     },
+            //     HeightCamera,
+            //     HEIGHT_LAYERS,
+            // ));
         });
+
+    // commands.spawn((
+    //     SpriteBundle {
+    //         texture: image_handle,
+    //         ..Default::default()
+    //     },
+    //     Canvas,
+    //     HIGH_RES_LAYERS,
+    // ));
 
     // quad
     commands.spawn((
@@ -177,14 +186,23 @@ fn setup(
             )),
             material: materials.add(CustomMaterial {
                 color_texture: image_handle,
-                lights_texture: image_lights_handle,
-                height_texture: image_height_handle,
+                // lights_texture: image_lights_handle,
+                // height_texture: image_height_handle,
             }),
             ..default()
         },
         Canvas,
         HIGH_RES_LAYERS,
     ));
+
+    // commands.spawn((
+    //     SpriteBundle {
+    //         texture: image_handle,
+    //         ..default()
+    //     },
+    //     Canvas,
+    //     HIGH_RES_LAYERS,
+    // ));
 
     // the "outer" camera renders whatever is on `HIGH_RES_LAYERS` to the screen.
     // here, the canvas and one of the sample sprites will be rendered by this camera
@@ -209,10 +227,10 @@ struct CustomMaterial {
     #[texture(0)]
     #[sampler(1)]
     color_texture: Handle<Image>,
-    #[texture(2)]
-    lights_texture: Handle<Image>,
-    #[texture(3)]
-    height_texture: Handle<Image>,
+    // #[texture(2)]
+    // lights_texture: Handle<Image>,
+    // #[texture(3)]
+    // height_texture: Handle<Image>,
 }
 
 impl Material2d for CustomMaterial {

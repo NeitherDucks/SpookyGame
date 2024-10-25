@@ -1,23 +1,30 @@
-use std::time::Instant;
+// use std::time::Instant;
 
 use bevy::prelude::*;
 
 use crate::ldtk::{animation::new_animation, entities::EnemyTag};
 
-use super::{INVESTIGATOR_ANIMATION_IDLE, VILLAGER_ANIMATION_IDLE};
+use super::{IDLING_TIME, INVESTIGATOR_ANIMATION_IDLE, VILLAGER_ANIMATION_IDLE};
 
-#[derive(Reflect, Clone, Component)]
-#[reflect(Component)]
+#[derive(Clone, Component)]
 #[component(storage = "SparseSet")]
 pub struct Idle {
-    pub start: Instant,
+    // pub start: Instant,
+    pub timer: Timer,
 }
 
 impl Default for Idle {
     fn default() -> Self {
         Idle {
-            start: Instant::now(),
+            // start: Instant::now(),
+            timer: Timer::from_seconds(IDLING_TIME as f32, TimerMode::Once),
         }
+    }
+}
+
+pub fn idle_update(mut query: Query<&mut Idle>, time: Res<Time>) {
+    for mut idle in &mut query {
+        idle.timer.tick(time.delta());
     }
 }
 

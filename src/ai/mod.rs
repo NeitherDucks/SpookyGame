@@ -113,6 +113,7 @@ impl Plugin for AiPlugin {
                 talk_to_investigator_update,
                 follow_path,
                 update_animation_aim,
+                idle_update,
             )
                 .run_if(in_state(PlayingState::Playing)),
         )
