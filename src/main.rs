@@ -1,4 +1,5 @@
 mod ai;
+mod audio;
 mod config;
 mod game_mode;
 mod grid;
@@ -11,6 +12,7 @@ mod states;
 mod utils;
 
 use ai::AiPlugin;
+use audio::AudioPlugin;
 use bevy::prelude::*;
 use bevy_dev_tools::states::log_transitions;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
@@ -35,6 +37,7 @@ fn main() {
             WorldInspectorPlugin::new(), // for debug
             EntropyPlugin::<WyRand>::default(),
             RenderingPlugin,
+            AudioPlugin,
             GridPlugin::<Tile>::default(),
             MenusPlugin,
             GamePlugin,
