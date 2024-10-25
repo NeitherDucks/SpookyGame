@@ -1,3 +1,5 @@
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 mod ai;
 mod audio;
 mod config;
@@ -14,6 +16,7 @@ mod utils;
 use ai::AiPlugin;
 use audio::AudioPlugin;
 use bevy::prelude::*;
+use bevy_embedded_assets::{EmbeddedAssetPlugin, PluginMode};
 // use bevy_dev_tools::states::log_transitions;
 // use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rand::plugin::EntropyPlugin;
@@ -32,6 +35,9 @@ use states::GameState;
 fn main() {
     App::new()
         .add_plugins((
+            EmbeddedAssetPlugin {
+                mode: PluginMode::ReplaceDefault,
+            },
             DefaultPlugins.set(ImagePlugin::default_nearest()),
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(PIXEL_PER_TILE),
             // WorldInspectorPlugin::new(), // for debug

@@ -11,6 +11,7 @@ dependencies = [
  "bevy_dev_tools",
  "bevy_ecs_ldtk",
  "bevy_ecs_tilemap",
+ "bevy_embedded_assets",
  "bevy_rand",
  "bevy_rapier2d",
  "getrandom",
@@ -710,6 +711,19 @@ dependencies = [
  "webbrowser",
  "wgpu-types",
  "winit",
+]
+
+[[package]]
+name = "bevy_embedded_assets"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b3f3e7b41a9b01b767ba07c4ebb083b2d8d8055e57ddef7e55e502bbfc961505"
+dependencies = [
+ "bevy",
+ "cargo-emit",
+ "futures-io",
+ "futures-lite",
+ "thiserror",
 ]
 
 [[package]]
@@ -1487,6 +1501,12 @@ dependencies = [
  "wayland-backend",
  "wayland-client",
 ]
+
+[[package]]
+name = "cargo-emit"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1582e1c9e755dd6ad6b224dcffb135d199399a4568d454bd89fe515ca8425695"
 
 [[package]]
 name = "cc"
