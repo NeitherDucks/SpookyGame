@@ -274,6 +274,11 @@ fn interaction_pressed(
                 // IMPROVEME: Tweening between positions
                 // Needs to set Z to 0 since it's relative to it's ldtk layer.
                 player_transform.translation = hidding_spot_transform.translation.with_z(0.);
+
+                // This should prevent the Interaction from accumulating extra counts when poping out of the hidding place.
+                commands.entity(player).remove::<InteractionPossible>();
+
+                // should also remove the indicator.
             }
             InteractibleTag::NoiseMaker => {
                 // If we can get the linked noise maker from the interaction.
