@@ -1,6 +1,6 @@
 [package]
 name = "SpookyGame"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 
 [dependencies.bevy]
@@ -32,9 +32,9 @@ bevy_ecs_ldtk = "0.10.0"
 bevy_ecs_tilemap = "0.14.0"
 bevy_embedded_assets = "0.11.0"
 # bevy-inspector-egui = "0.26.0"
-bevy_rand = {version = "0.7.1", features = ["wyrand"]}
-bevy_rapier2d = {version="0.27.0", features = ["debug-render-2d"]}
-iyes_progress = {version="0.12.0", features = ["assets"]}
+bevy_rand = { version = "0.7.1", features = ["wyrand"] }
+bevy_rapier2d = { version = "0.27.0", features = ["debug-render-2d"] }
+iyes_progress = { version = "0.12.0", features = ["assets"] }
 pathfinding = "4.11.0"
 rand_core = "0.6.4"
 
@@ -42,7 +42,7 @@ rand_core = "0.6.4"
 [target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
 getrandom = { version = "0.2", features = ["js"] }
 
-# [profile.release]
-# opt-level = 'z'
-# lto = true
-# codegen-units = 1
+[profile.release]
+opt-level = 'z'
+lto = true
+codegen-units = 1

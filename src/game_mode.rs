@@ -22,9 +22,9 @@ use crate::{
 #[derive(Resource, Reflect)]
 #[reflect(Resource)]
 pub struct Score {
-    total_villagers: u8,
-    villagers_killed: u8,
-    player_lives: u8,
+    total_villagers: usize,
+    villagers_killed: usize,
+    player_lives: usize,
 }
 
 impl Default for Score {
@@ -140,13 +140,13 @@ fn update_ui(
     }
 
     if let Ok(mut villagers_killed) = villagers_killed.get_single_mut() {
-        villagers_killed.index = score.villagers_killed as usize;
+        villagers_killed.index = score.villagers_killed;
     }
     if let Ok(mut villagers_total) = villagers_total.get_single_mut() {
-        villagers_total.index = score.total_villagers as usize;
+        villagers_total.index = score.total_villagers;
     }
     if let Ok(mut player_lives) = player_lives.get_single_mut() {
-        player_lives.index = score.player_lives as usize;
+        player_lives.index = score.player_lives;
     }
 }
 
@@ -155,13 +155,13 @@ fn player_death(
     mut player: Query<Entity, With<PlayerTag>>,
     mut score: ResMut<Score>,
     mut next_state: ResMut<NextState<PlayingState>>,
-    mut ui: Query<&mut TextureAtlas, With<PlayerLivesUiTag>>,
+    // mut ui: Query<&mut TextureAtlas, With<PlayerLivesUiTag>>,
 ) {
     score.player_lives -= 1;
 
-    if let Ok(mut ui) = ui.get_single_mut() {
-        ui.index -= 1;
-    }
+    // if let Ok(mut ui) = ui.get_single_mut() {
+    //     ui.index -= 1;
+    // }
 
     let Ok(player) = player.get_single_mut() else {
         next_state.set(PlayingState::Lose);
